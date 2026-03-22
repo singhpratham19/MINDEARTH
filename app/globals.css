@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
+html { scroll-behavior: smooth; }
+::selection { background: #E6F4EF; color: #0B6E4F; }
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #0F172A;
+  line-height: 1.6;
+}
+.font-heading {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #F8FAFC; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #0B6E4F; }
+
+/* Card hover lift */
+.lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* Focus ring */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #0B6E4F;
+  box-shadow: 0 0 0 3px rgba(11, 110, 79, 0.08);
+}
+
+/* Image zoom on hover */
+.img-zoom img {
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.img-zoom:hover img {
+  transform: scale(1.03);
+}
