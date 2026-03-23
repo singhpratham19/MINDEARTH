@@ -5,19 +5,19 @@ import Fade from "@/components/Fade";
 
 const services = [
   {
-    tag: "RESEARCH", title: "ESG Market Research",
-    desc: "Comprehensive sector, regional, and thematic research reports examining ESG trends, regulatory developments, investor expectations, and competitive benchmarking across 25+ industries and 40+ countries.",
+    tag: "CUSTOM RESEARCH", title: "Custom ESG Reports",
+    desc: "Bespoke research reports tailored to your specific market, geography, or investment thesis. Our analysts build custom ESG intelligence covering sector dynamics, regulatory mapping, competitive benchmarking, and strategic recommendations across 25+ industries and 40+ countries.",
     img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80",
     color: "emerald",
     items: [
-      "Syndicated & custom research reports with integrated ESG analysis",
-      "ESG materiality assessments aligned with GRI, SASB, and BRSR",
-      "Stakeholder perception research and investor expectation mapping",
-      "Regulatory trend analysis across EU, India, US, and APAC jurisdictions",
-      "Peer benchmarking and competitive intelligence",
+      "Fully bespoke research scoped to your market, region, or thesis",
+      "Proprietary data models with L1 scoping & L2 segmentation methodology",
+      "Company profiling, competitive mapping, and SWOT analysis",
+      "Regulatory landscape analysis across EU, India, US, and APAC",
+      "Delivered as PDF report + Excel data model with 6-year forecasts",
     ],
-    cta: "/reports",
-    ctaLabel: "Browse Reports",
+    cta: "/contact",
+    ctaLabel: "Request Custom Report",
   },
   {
     tag: "ADVISORY", title: "ESG Strategy & Advisory",

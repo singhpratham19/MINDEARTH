@@ -8,9 +8,9 @@ import CountUp from "@/components/CountUp";
 import { heroImage, industries, reports, clientLogos } from "@/lib/data";
 
 const press = [
-  { date: "Mar 15, 2026", cat: "TRENDS", title: "MindEarth ESG Trends Q1 2026: Regulatory Acceleration Across Emerging Markets", excerpt: "34% increase in mandatory ESG disclosure requirements across South Asia and the Middle East.", img: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80" },
-  { date: "Feb 28, 2026", cat: "DATA", title: "Carbon Markets Grow 22% YoY as Institutional Demand Accelerates", excerpt: "Voluntary carbon credit transactions reached $2.8B in 2025, driven by corporate net-zero commitments.", img: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=600&q=80" },
-  { date: "Feb 10, 2026", cat: "OUTLOOK", title: "Sustainable Finance Outlook: Green Bond Issuance to Cross $1T by 2028", excerpt: "Asia-Pacific markets contributing 38% of new issuance volume as sovereign programs scale.", img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&q=80" },
+  { slug: "esg-trends-q1-2026", date: "Mar 15, 2026", cat: "TRENDS", title: "MindEarth ESG Trends Q1 2026: Regulatory Acceleration Across Emerging Markets", excerpt: "34% increase in mandatory ESG disclosure requirements across South Asia and the Middle East.", img: "https://images.unsplash.com/photo-1577415124269-fc1140a69e91?w=600&q=80" },
+  { slug: "carbon-markets-2025", date: "Feb 28, 2026", cat: "DATA", title: "Carbon Markets Grow 22% YoY as Institutional Demand Accelerates", excerpt: "Voluntary carbon credit transactions reached $2.8B in 2025, driven by corporate net-zero commitments.", img: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&q=80" },
+  { slug: "green-bond-outlook-2028", date: "Feb 10, 2026", cat: "OUTLOOK", title: "Sustainable Finance Outlook: Green Bond Issuance to Cross $1T by 2028", excerpt: "Asia-Pacific markets contributing 38% of new issuance volume as sovereign programs scale.", img: "https://images.unsplash.com/photo-1618044733300-9472054094ee?w=600&q=80" },
 ];
 
 const whyCards = [
@@ -74,12 +74,12 @@ export default function Home() {
             <Fade delay={0.28}>
               <div className="flex gap-4">
                 <Link href="/reports" className="bg-[#0B6E4F] text-white font-semibold text-sm px-7 py-3.5 rounded-lg hover:bg-[#095C42] transition-colors duration-200 shadow-sm">Browse Reports</Link>
-                <Link href="/contact" className="bg-white/20 backdrop-blur-sm text-white font-semibold text-sm px-7 py-3.5 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-200">Request Demo</Link>
+                <Link href="/contact" className="bg-white/20 backdrop-blur-sm text-white font-semibold text-sm px-7 py-3.5 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-200">Subscribe for Full Access</Link>
               </div>
             </Fade>
           </div>
           <Fade delay={0.34}>
-            <div className="flex gap-12 mt-16 pt-8 border-t border-white/10 max-w-2xl">
+            <div className="flex gap-12 mt-16 pt-8 max-w-2xl">
               {[["300+","ESG Reports"],["25+","Industries"],["40+","Countries"],["850+","Clients"]].map(([n,l])=>(
                 <div key={l} className="text-left">
                   <div className="font-heading text-2xl font-bold text-white">{n}</div>
@@ -88,11 +88,6 @@ export default function Home() {
               ))}
             </div>
           </Fade>
-        </div>
-        {/* Right-side decorative image overlay */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block">
-          <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&q=80" alt="" className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A2540] to-transparent" />
         </div>
       </section>
 
@@ -132,21 +127,19 @@ export default function Home() {
             <div className="flex justify-between items-end mb-12">
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.2em] text-[#0B6E4F] uppercase mb-3">Browse by Industry</p>
-                <h2 className="font-heading text-[32px] sm:text-[38px] font-bold text-brand-dark tracking-[-0.01em]">25+ Industry Verticals</h2>
+                <h2 className="font-heading text-[32px] sm:text-[38px] font-bold text-brand-dark tracking-[-0.01em]">Industry Verticals</h2>
               </div>
-              <span className="text-sm text-[#0B6E4F] font-semibold cursor-pointer hidden sm:block hover:underline">View all →</span>
+              <Link href="/reports" className="text-sm text-[#0B6E4F] font-semibold hidden sm:block hover:underline">View all →</Link>
             </div>
           </Fade>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {industries.map((ind, i) => (
-              <Fade key={ind.name} delay={i * 0.03}>
-                <div className="rounded-xl overflow-hidden border border-brand-border cursor-pointer hover:-translate-y-1 hover:shadow-md transition-all duration-300 group bg-white">
-                  <div className="relative h-24 overflow-hidden">
-                    <img src={ind.img} alt={ind.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/75 to-transparent" />
-                    <div className="absolute bottom-3 left-4 right-4">
-                      <span className="text-white text-[13px] font-semibold">{ind.name}</span>
-                    </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+            {industries.slice(0, 6).map((ind, i) => (
+              <Fade key={ind.name} delay={i * 0.05}>
+                <div className="rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 group relative h-52">
+                  <img src={`${ind.img.split('?')[0]}?w=800&q=80`} alt={ind.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/90 via-[#0A2540]/40 to-transparent" />
+                  <div className="absolute bottom-5 left-6 right-6">
+                    <span className="text-white text-[18px] font-bold tracking-[-0.01em]">{ind.name}</span>
                   </div>
                 </div>
               </Fade>
@@ -168,58 +161,26 @@ export default function Home() {
             </div>
           </Fade>
           <Fade delay={0.04}>
-            <div className="flex gap-2 mb-8 mt-4 flex-wrap">
-              {[["all","All"],["Energy","Energy"],["Financial","Financial"],["Sustainability","Sustainability"],["Technology","Technology"]].map(([k,l])=>(
-                <button key={k} onClick={()=>setTab(k)} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${tab===k?"bg-[#0B6E4F] text-white border-[#0B6E4F]":"bg-brand-light text-brand-body border-brand-border hover:border-brand-muted"}`}>{l}</button>
-              ))}
-            </div>
+            <p className="text-[15px] text-brand-body leading-relaxed mb-10 max-w-2xl">Stay updated with expert perspectives, industry analysis, and forward-looking trends from our team of global research analysts.</p>
           </Fade>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((r, i) => (
-              <Fade key={r.code} delay={i * 0.05}>
-                <div className="bg-white rounded-xl border border-brand-border overflow-hidden hover:border-[#0B6E4F]/30 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
-                  <div className="relative h-40 overflow-hidden">
-                    <img src={r.img} alt={r.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A2540]/40 to-transparent" />
+          <div className="grid md:grid-cols-3 gap-6">
+            {reports.slice(0, 3).map((r, i) => (
+              <Fade key={r.code} delay={i * 0.06}>
+                <div className="bg-white rounded-xl border border-brand-border p-7 hover:border-[#0B6E4F]/30 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group h-full flex flex-col">
+                  <h3 className="font-heading text-[18px] font-bold text-brand-dark leading-snug mb-3 group-hover:text-[#0B6E4F] transition-colors duration-200">{r.title}</h3>
+                  <div className="flex gap-3 mb-4">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0B6E4F] bg-[#E6F4EF] px-2.5 py-1 rounded-md">CAGR: {r.cagr}</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">{r.period}</span>
                   </div>
-                  <div className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-[11px] font-medium text-brand-muted">{r.code}</span>
-                    <div className="flex gap-2">
-                      {r.badge && <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-md ${r.badge==="Bestseller"?"bg-amber-50 text-amber-700":r.badge==="New"?"bg-blue-50 text-[#0A2540]":"bg-[#E6F4EF] text-[#0B6E4F]"}`}>{r.badge}</span>}
-                      <span className="bg-[#E6F4EF] text-[#0B6E4F] text-[10px] font-semibold px-2.5 py-1 rounded-md">{r.cat}</span>
-                    </div>
-                  </div>
-                  <Link href={`/reports/${r.slug}`}><h3 className="font-heading text-[16px] font-bold text-brand-dark leading-snug mb-3 group-hover:text-[#0B6E4F] transition-colors duration-200">{r.title}</h3></Link>
-                  <p className="text-sm text-brand-body leading-relaxed mb-4">{r.desc}</p>
-                  <div className="grid grid-cols-3 gap-3 py-3 border-y border-brand-border/60 mb-4">
-                    {[["CAGR",r.cagr,true],["Size",r.size,false],["Period",r.period,false]].map(([l,v,g])=>(
-                      <div key={l}>
-                        <p className="text-[10px] font-semibold text-brand-muted tracking-wide uppercase mb-1">{l}</p>
-                        <p className={`text-sm font-bold ${g?"text-[#0B6E4F]":"text-brand-dark"}`}>{v}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold text-brand-muted tracking-wide uppercase mb-2.5">Key Players</p>
-                    <div className="flex items-center gap-4">
-                      {r.domains.slice(0, 5).map((d, ci) => (
-                        <img key={d} src={`https://www.google.com/s2/favicons?domain=${d}&sz=64`} alt={r.companies[ci]} title={r.companies[ci]} className="w-6 h-6 rounded object-contain opacity-60 hover:opacity-100 transition-opacity duration-200" />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-baseline gap-1.5"><span className="text-[11px] text-brand-muted">From</span><span className="font-heading text-xl font-bold text-brand-dark">${r.price.toLocaleString()}</span></div>
-                    <Link href={`/reports/${r.slug}`} className="bg-[#0B6E4F] text-white text-[11px] font-semibold px-4 py-2 rounded-lg hover:bg-[#095C42] transition-colors duration-200">View Report →</Link>
-                  </div>
-                  </div>
+                  <p className="text-sm text-brand-body leading-relaxed mb-5 flex-1">{r.desc}</p>
+                  <Link href={`/reports/${r.slug}`} className="text-sm font-semibold text-brand-dark hover:text-[#0B6E4F] transition-colors duration-200 inline-flex items-center gap-1.5">Read More <span>→</span></Link>
                 </div>
               </Fade>
             ))}
           </div>
           <Fade delay={0.3}>
             <div className="text-center mt-12">
-              <Link href="/reports" className="border-2 border-[#0B6E4F] text-[#0B6E4F] font-semibold text-sm px-8 py-3.5 rounded-lg hover:bg-[#0B6E4F] hover:text-white transition-all duration-200 inline-block">Browse All 300+ Reports</Link>
+              <Link href="/reports" className="text-sm font-semibold text-[#0B6E4F] hover:underline inline-flex items-center gap-2">More Publications <span className="text-lg">→</span></Link>
             </div>
           </Fade>
         </div>
@@ -251,7 +212,7 @@ export default function Home() {
                     </div>
                     <h3 className="font-heading text-[15px] font-bold text-brand-dark leading-snug mb-3 group-hover:text-[#0B6E4F] transition-colors duration-200">{p.title}</h3>
                     <p className="text-sm text-brand-body leading-relaxed flex-1">{p.excerpt}</p>
-                    <span className="text-sm text-[#0B6E4F] font-semibold mt-4 cursor-pointer hover:underline">Read More →</span>
+                    <Link href={`/insights/${p.slug}`} className="text-sm text-[#0B6E4F] font-semibold mt-4 hover:underline">Read More →</Link>
                   </div>
                 </div>
               </Fade>
@@ -260,15 +221,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ CERTIFICATIONS ═══ */}
-      <div className="border-y border-brand-border bg-white py-10 px-6">
-        <div className="max-w-container mx-auto text-center">
-          <p className="text-[11px] font-semibold tracking-[0.2em] text-brand-muted uppercase mb-5">Global ESG Standards Compliant</p>
-          <div className="flex justify-center gap-8 md:gap-10 flex-wrap">
-            {["GRI","SASB","TCFD","ISO 14001","UN SDGs","ISSB","BRSR"].map(f=>(
-              <div key={f} className="flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity duration-300 cursor-pointer">
-                <div className="w-2 h-2 rounded-full bg-[#0B6E4F]"/>
-                <span className="font-heading text-sm font-semibold text-brand-dark">{f}</span>
+      {/* ═══ CERTIFICATIONS MARQUEE ═══ */}
+      <div className="border-y border-brand-border bg-white py-12 overflow-hidden">
+        <p className="text-[11px] font-semibold tracking-[0.2em] text-brand-muted uppercase mb-8 text-center">Global ESG Standards Compliant</p>
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
+          <div className="flex animate-marquee">
+            {[...Array(2)].map((_, setIdx) => (
+              <div key={setIdx} className="flex shrink-0 items-center gap-16 px-8">
+                {[
+                  { name: "CDP", color: "#1A1A6C" },
+                  { name: "GRI", color: "#1D4E89" },
+                  { name: "SASB", color: "#003B5C" },
+                  { name: "TCFD", color: "#0077C8" },
+                  { name: "ISO 14001", color: "#C8102E" },
+                  { name: "UN SDGs", color: "#009EDB" },
+                  { name: "ISSB", color: "#003B5C" },
+                  { name: "BRSR", color: "#0B6E4F" },
+                  { name: "EU CSRD", color: "#003399" },
+                  { name: "PCAF", color: "#00A651" },
+                  { name: "PRI", color: "#0077C8" },
+                ].map(f => (
+                  <span key={f.name} className="font-heading text-[22px] font-extrabold tracking-tight whitespace-nowrap" style={{ color: f.color }}>{f.name}</span>
+                ))}
               </div>
             ))}
           </div>
