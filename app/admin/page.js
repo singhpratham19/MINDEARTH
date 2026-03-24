@@ -24,11 +24,15 @@ export default function AdminPanel() {
       const res = await fetch("/api/admin/reports", {
         headers: { Authorization: `Bearer ${password}` },
       });
-      const json = await res.json();
-      if (json.error) { setAuthed(false); return; }
+      if (!res.ok) { setAuthed(false); setLoading(false); return; }
+      const text = await res.text();
+      if (!text) { setData({ reportFiles: [], sampleRequests: [], inquiries: [], contacts: [], subscribers: [] }); setLoading(false); return; }
+      const json = JSON.parse(text);
+      if (json.error) { setAuthed(false); setLoading(false); return; }
       setData(json);
     } catch (err) {
       console.error(err);
+      setData({ reportFiles: [], sampleRequests: [], inquiries: [], contacts: [], subscribers: [] });
     }
     setLoading(false);
   };
