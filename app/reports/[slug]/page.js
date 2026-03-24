@@ -14,6 +14,38 @@ export default function ReportDetail() {
   const [activeTab, setActiveTab] = useState("overview");
   const [license, setLicense] = useState(0);
   const [expandedChapters, setExpandedChapters] = useState({});
+  const [showSampleModal, setShowSampleModal] = useState(false);
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", company: "", jobTitle: "", phone: "", message: "" });
+  const [formStatus, setFormStatus] = useState({ loading: false, msg: "", success: false });
+
+  const submitSampleRequest = async (e) => {
+    e.preventDefault();
+    setFormStatus({ loading: true, msg: "", success: false });
+    try {
+      const res = await fetch("/api/request-sample", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, reportSlug: report.slug, reportTitle: report.title }),
+      });
+      const json = await res.json();
+      setFormStatus({ loading: false, msg: json.message || json.error, success: !!json.success });
+    } catch { setFormStatus({ loading: false, msg: "Something went wrong", success: false }); }
+  };
+
+  const submitInquiry = async (e) => {
+    e.preventDefault();
+    setFormStatus({ loading: true, msg: "", success: false });
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, reportSlug: report.slug, reportTitle: report.title, inquiryType: "Report Inquiry" }),
+      });
+      const json = await res.json();
+      setFormStatus({ loading: false, msg: json.message || json.error, success: !!json.success });
+    } catch { setFormStatus({ loading: false, msg: "Something went wrong", success: false }); }
+  };
 
   if (!report) return <div className="p-20 text-center text-gray-400">Report not found</div>;
 
@@ -61,7 +93,7 @@ export default function ReportDetail() {
                 </div>
               ))}
               <Link href={`/checkout/${report.slug}`} className="block w-full bg-emerald-500 text-white font-semibold text-sm py-3 rounded-lg mt-3 hover:bg-emerald-600 transition text-center">Buy Now</Link>
-              <button className="w-full border border-emerald-500 text-emerald-600 font-semibold text-sm py-3 rounded-lg mt-2 hover:bg-emerald-50 transition">Download Free Sample</button>
+              <button onClick={() => { setShowSampleModal(true); setFormStatus({ loading: false, msg: "", success: false }); }} className="w-full border border-emerald-500 text-emerald-600 font-semibold text-sm py-3 rounded-lg mt-2 hover:bg-emerald-50 transition">Download Free Sample</button>
               <div className="border-t border-gray-100 mt-4 pt-3">
                 <p className="text-[10px] text-gray-400 mb-2">Includes:</p>
                 {[`${report.pages} page PDF`, "Excel data model", "6-year forecasts", "Company profiles", "30-day analyst support"].map(f => <div key={f} className="flex items-center gap-2 mb-1.5"><svg className="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg><span className="text-[11px] text-gray-600">{f}</span></div>)}
@@ -518,6 +550,71 @@ export default function ReportDetail() {
         </div>
       </section>
       <Footer />
+
+      {/* Sample Request Modal */}
+      {showSampleModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSampleModal(false)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowSampleModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center"><svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+              <div><h3 className="font-bold text-gray-900">Request Free Sample</h3><p className="text-xs text-gray-400">{report.title}</p></div>
+            </div>
+            {formStatus.success ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M5 13l4 4L19 7"/></svg></div>
+                <p className="font-semibold text-gray-900 mb-1">Sample Requested!</p>
+                <p className="text-sm text-gray-500">Check your email for the sample PDF.</p>
+              </div>
+            ) : (
+              <form onSubmit={submitSampleRequest} className="space-y-3">
+                <input required placeholder="Full Name *" value={formData.name} onChange={e => setFormData(p => ({...p, name: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <input required type="email" placeholder="Business Email *" value={formData.email} onChange={e => setFormData(p => ({...p, email: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <input required placeholder="Company *" value={formData.company} onChange={e => setFormData(p => ({...p, company: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <div className="grid grid-cols-2 gap-3">
+                  <input placeholder="Job Title" value={formData.jobTitle} onChange={e => setFormData(p => ({...p, jobTitle: e.target.value}))} className="border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                  <input placeholder="Phone" value={formData.phone} onChange={e => setFormData(p => ({...p, phone: e.target.value}))} className="border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                </div>
+                {formStatus.msg && !formStatus.success && <p className="text-xs text-red-500">{formStatus.msg}</p>}
+                <button type="submit" disabled={formStatus.loading} className="w-full bg-[#0B6E4F] text-white font-semibold text-sm py-3 rounded-lg hover:bg-[#095C42] transition disabled:opacity-50">
+                  {formStatus.loading ? "Submitting..." : "Get Free Sample PDF"}
+                </button>
+                <p className="text-[10px] text-gray-400 text-center">By submitting, you agree to receive communications from MindEarth.</p>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Inquiry Modal */}
+      {showInquiryModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowInquiryModal(false)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowInquiryModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            <h3 className="font-bold text-gray-900 mb-1">Ask About This Report</h3>
+            <p className="text-xs text-gray-400 mb-4">{report.title}</p>
+            {formStatus.success ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M5 13l4 4L19 7"/></svg></div>
+                <p className="font-semibold text-gray-900 mb-1">Inquiry Received!</p>
+                <p className="text-sm text-gray-500">Our analyst team will contact you within 24 hours.</p>
+              </div>
+            ) : (
+              <form onSubmit={submitInquiry} className="space-y-3">
+                <input required placeholder="Full Name *" value={formData.name} onChange={e => setFormData(p => ({...p, name: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <input required type="email" placeholder="Business Email *" value={formData.email} onChange={e => setFormData(p => ({...p, email: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <input placeholder="Company" value={formData.company} onChange={e => setFormData(p => ({...p, company: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <input placeholder="Phone" value={formData.phone} onChange={e => setFormData(p => ({...p, phone: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400" />
+                <textarea required placeholder="Your question about this report *" rows={3} value={formData.message} onChange={e => setFormData(p => ({...p, message: e.target.value}))} className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-emerald-400 resize-none" />
+                {formStatus.msg && !formStatus.success && <p className="text-xs text-red-500">{formStatus.msg}</p>}
+                <button type="submit" disabled={formStatus.loading} className="w-full bg-[#0B6E4F] text-white font-semibold text-sm py-3 rounded-lg hover:bg-[#095C42] transition disabled:opacity-50">
+                  {formStatus.loading ? "Submitting..." : "Submit Inquiry"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

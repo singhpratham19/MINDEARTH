@@ -15,7 +15,26 @@ const faqs = [
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", jobTitle: "", company: "", subject: "", message: "" });
+  const upd = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.message) return;
+    setSending(true);
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error(err);
+    }
+    setSending(false);
+  };
 
   return (
     <>
@@ -60,19 +79,18 @@ export default function ContactPage() {
             ) : (
               <Fade><div className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {[["Full Name *","text","Your name"],["Email *","email","you@company.com"],["Phone","tel","+91 98765 43210"],["Job Title","text","e.g. Head of Sustainability"]].map(([l,t,p])=><div key={l}><label className="text-xs font-semibold text-gray-600 mb-1.5 block">{l}</label><input type={t} placeholder={p} className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 transition placeholder:text-gray-400"/></div>)}
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Full Name *</label><input value={form.name} onChange={upd("name")} placeholder="Your name" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 transition placeholder:text-gray-400"/></div>
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Email *</label><input type="email" value={form.email} onChange={upd("email")} placeholder="you@company.com" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 transition placeholder:text-gray-400"/></div>
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Phone</label><input type="tel" value={form.phone} onChange={upd("phone")} placeholder="+91 98765 43210" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 transition placeholder:text-gray-400"/></div>
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Job Title</label><input value={form.jobTitle} onChange={upd("jobTitle")} placeholder="e.g. Head of Sustainability" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 transition placeholder:text-gray-400"/></div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Organisation</label><input placeholder="Company name" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 placeholder:text-gray-400"/></div>
-                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Interest Area</label><select className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 text-gray-600 cursor-pointer"><option>Select...</option><option>Syndicated Reports</option><option>Custom Research</option><option>BRSR Advisory</option><option>ESG Strategy</option><option>Climate Risk</option><option>Training</option><option>Partnership</option><option>Other</option></select></div>
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Organisation</label><input value={form.company} onChange={upd("company")} placeholder="Company name" className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 placeholder:text-gray-400"/></div>
+                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Interest Area</label><select value={form.subject} onChange={upd("subject")} className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 text-gray-600 cursor-pointer"><option value="">Select...</option><option>Syndicated Reports</option><option>Custom Research</option><option>BRSR Advisory</option><option>ESG Strategy</option><option>Climate Risk</option><option>Training</option><option>Partnership</option><option>Other</option></select></div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Budget Range</label><select className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none text-gray-600"><option>Select (optional)...</option><option>Under ₹5L</option><option>₹5L – ₹15L</option><option>₹15L – ₹50L</option><option>₹50L+</option></select></div>
-                  <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">Timeline</label><select className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none text-gray-600"><option>Select (optional)...</option><option>Immediate</option><option>1-3 months</option><option>3-6 months</option><option>6+ months</option></select></div>
-                </div>
-                <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">How can we help? *</label><textarea rows={4} placeholder="Tell us about your research needs..." className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 resize-vertical placeholder:text-gray-400"/></div>
+                <div><label className="text-xs font-semibold text-gray-600 mb-1.5 block">How can we help? *</label><textarea rows={4} value={form.message} onChange={upd("message")} placeholder="Tell us about your research needs..." className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-50 resize-vertical placeholder:text-gray-400"/></div>
                 <div className="flex items-start gap-2"><input type="checkbox" className="mt-1 accent-emerald-500"/><span className="text-xs text-gray-500">I agree to receive ESG insights from MindEarth. Unsubscribe anytime.</span></div>
-                <button onClick={() => setSubmitted(true)} className="bg-emerald-500 text-white font-semibold text-sm px-7 py-3 rounded-lg hover:bg-emerald-600 transition shadow-sm">Send Message</button>
+                <button onClick={handleSubmit} disabled={sending} className="bg-emerald-500 text-white font-semibold text-sm px-7 py-3 rounded-lg hover:bg-emerald-600 transition shadow-sm disabled:opacity-50">{sending ? "Sending..." : "Send Message"}</button>
               </div></Fade>
             )}
           </div>
