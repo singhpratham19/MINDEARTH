@@ -17,11 +17,11 @@ export default function ReportDetail() {
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", company: "", jobTitle: "", phone: "", message: "" });
-  const [formStatus, setFormStatus] = useState({ loading: false, msg: "", success: false });
+  const [formStatus, setFormStatus] = useState({ loading: false, msg: "", success: false, downloadUrl: null });
 
   const submitSampleRequest = async (e) => {
     e.preventDefault();
-    setFormStatus({ loading: true, msg: "", success: false });
+    setFormStatus({ loading: true, msg: "", success: false, downloadUrl: null });
     try {
       const res = await fetch("/api/request-sample", {
         method: "POST",
@@ -29,8 +29,8 @@ export default function ReportDetail() {
         body: JSON.stringify({ ...formData, reportSlug: report.slug, reportTitle: report.title }),
       });
       const json = await res.json();
-      setFormStatus({ loading: false, msg: json.message || json.error, success: !!json.success });
-    } catch { setFormStatus({ loading: false, msg: "Something went wrong", success: false }); }
+      setFormStatus({ loading: false, msg: json.message || json.error, success: !!json.success, downloadUrl: json.downloadUrl || null });
+    } catch { setFormStatus({ loading: false, msg: "Something went wrong", success: false, downloadUrl: null }); }
   };
 
   const submitInquiry = async (e) => {
@@ -563,8 +563,12 @@ export default function ReportDetail() {
             {formStatus.success ? (
               <div className="text-center py-6">
                 <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3"><svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M5 13l4 4L19 7"/></svg></div>
-                <p className="font-semibold text-gray-900 mb-1">Sample Requested!</p>
-                <p className="text-sm text-gray-500">Check your email for the sample PDF.</p>
+                <p className="font-semibold text-gray-900 mb-1">Sample Ready!</p>
+                {formStatus.downloadUrl ? (
+                  <><a href={formStatus.downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#0B6E4F] text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-[#095C42] transition mt-3"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Download Sample PDF</a><p className="text-xs text-gray-400 mt-2">Also sent to your email.</p></>
+                ) : (
+                  <p className="text-sm text-gray-500">We&apos;ll email you the sample PDF shortly.</p>
+                )}
               </div>
             ) : (
               <form onSubmit={submitSampleRequest} className="space-y-3">

@@ -55,7 +55,18 @@ export async function POST(req) {
       }
     }
 
-    return NextResponse.json({ success: true, message: "Sample request received! Check your email shortly." });
+    // Return download URL if sample PDF exists
+    let downloadUrl = null;
+    if (supabase) {
+      const { data: fileData } = await supabase
+        .from("report_files")
+        .select("sample_pdf_url")
+        .eq("report_slug", reportSlug)
+        .single();
+      if (fileData?.sample_pdf_url) downloadUrl = fileData.sample_pdf_url;
+    }
+
+    return NextResponse.json({ success: true, message: "Sample request received!", downloadUrl });
   } catch (err) {
     console.error("Sample request error:", err);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
