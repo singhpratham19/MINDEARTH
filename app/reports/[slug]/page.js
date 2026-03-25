@@ -54,7 +54,8 @@ export default function ReportDetail() {
   const chartData = Array.from({ length: 7 }, (_, i) => ({ year: String(2025 + i) + (i >= 5 ? "F" : ""), value: Math.round(baseVal * Math.pow(1 + cagrNum, i) * 10) / 10 }));
   const licenses = [["Single User", report.price, "1 user"], ["Multi User", report.price + 1000, "Up to 5 users"], ["Enterprise", report.price + 2500, "Unlimited + Excel"]];
   const related = reports.filter(r => r.slug !== report.slug).slice(0, 2);
-  const tabs = [{ k: "overview", l: "Overview" }, { k: "toc", l: "Table of Contents" }, { k: "segments", l: "Segmentation" }, { k: "companies", l: "Key Companies" }];
+  const baseTabs = [{ k: "overview", l: "Overview" }, { k: "toc", l: "Table of Contents" }, { k: "segments", l: "Segmentation" }, { k: "companies", l: "Key Companies" }];
+  const tabs = report.slug === "onshore-drilling-market" ? [baseTabs[0], { k: "esg", l: "ESG & GRI Analysis" }, ...baseTabs.slice(1)] : baseTabs;
 
   return (
     <>
@@ -400,7 +401,218 @@ export default function ReportDetail() {
                   {["Increasing regulatory pressure and mandatory ESG disclosures globally", "Growing institutional investor demand for ESG-aligned strategies", "Technological innovation reducing costs and improving accessibility", "Government policy support including subsidies and procurement mandates"].map((d, i) => <div key={i} className="flex items-start gap-2.5 mb-2"><div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5"><svg className="w-2.5 h-2.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg></div><span className="text-xs text-gray-600 leading-relaxed">{d}</span></div>)}
                 </>
               )}
+
             </>
+          )}
+          {activeTab === "esg" && report.slug === "onshore-drilling-market" && (
+                <Fade delay={0.1}>
+                  <div>
+                    {/* Section Header */}
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                      </div>
+                      <div>
+                        <h2 className="font-heading text-xl font-bold text-gray-800">ESG & GRI Analysis</h2>
+                        <p className="text-xs text-gray-400">Global Onshore Drilling Market | MindEarth Research | 2024–2031</p>
+                      </div>
+                    </div>
+
+                    {/* 1. GRI Framework */}
+                    <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">GRI Framework: Applicable Standards</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-4 leading-relaxed">The GRI Standards are the primary global framework for sustainability disclosure (10,000+ organisations, 100+ countries). For onshore drilling, material standards span three series plus the sector-specific GRI 11 Oil & Gas supplement.</p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead><tr className="bg-[#0A2540] text-white"><th className="px-3 py-2.5 text-left font-semibold rounded-tl-lg">GRI Series</th><th className="px-3 py-2.5 text-left font-semibold">Covers</th><th className="px-3 py-2.5 text-center font-semibold"># Stds</th><th className="px-3 py-2.5 text-left font-semibold rounded-tr-lg">Relevance to Onshore Drilling</th></tr></thead>
+                          <tbody>
+                            {[
+                              { series: "GRI 200 – Economic", covers: "Economic performance, anti-corruption, procurement, tax", stds: "7", relevance: "TCFD/ISSB climate financial risk; anti-bribery in NOC markets (FCPA/EITI); Pillar Two tax exposure" },
+                              { series: "GRI 300 – Environmental", covers: "Emissions, energy, water, biodiversity, waste", stds: "9", relevance: "GRI 305 (Scope 1–3, methane); GRI 302 (rig fuel intensity); GRI 303 (water/fracking); GRI 304 (biodiversity/TNFD)" },
+                              { series: "GRI 400 – Social", covers: "OHS, employment, community, human rights, diversity", stds: "16", relevance: "GRI 403 OHS (LTIR, well control, H₂S); GRI 413 (FPIC, social licence); GRI 411 (indigenous peoples)" },
+                              { series: "GRI 11 – Oil & Gas", covers: "Sector supplement to GRI 300/400", stds: "Sector", relevance: "Mandatory for O&G reporters; 23 material topics; benchmark under CSRD, SEC, ISSB audits" },
+                            ].map((r, i) => (
+                              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                <td className="px-3 py-2.5 font-semibold text-emerald-700">{r.series}</td>
+                                <td className="px-3 py-2.5 text-gray-600">{r.covers}</td>
+                                <td className="px-3 py-2.5 text-center font-bold text-gray-700">{r.stds}</td>
+                                <td className="px-3 py-2.5 text-gray-500">{r.relevance}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* 2. Regulatory Convergence */}
+                    <div className="bg-gradient-to-br from-blue-50/50 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">Regulatory Convergence: Structural Drivers (2025–2031)</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-4">Four simultaneous mandatory regimes are reshaping disclosure obligations:</p>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {[
+                          { tag: "EU CSRD", color: "bg-blue-600", desc: "GRI-aligned ESRS disclosures mandatory for large EU entities from 2025; sector-specific ESRS will incorporate GRI 11 mapping." },
+                          { tag: "ISSB IFRS S1/S2", color: "bg-indigo-600", desc: "Adopted in 25+ jurisdictions; elevates climate financial disclosure to mandatory with third-party assurance." },
+                          { tag: "SEC Climate Rule", color: "bg-amber-600", desc: "Scope 1 and 2 GHG data with third-party assurance mandatory for large accelerated US-listed filers from 2026." },
+                          { tag: "TNFD", color: "bg-emerald-600", desc: "Voluntary in 2023; targeted mandatory adoption in EU and UK by 2028; extends biodiversity reporting to upstream operators." },
+                        ].map((r, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-100 p-4">
+                            <span className={`${r.color} text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider`}>{r.tag}</span>
+                            <p className="text-xs text-gray-500 mt-2 leading-relaxed">{r.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 3. Top 4 Material GRI Risks */}
+                    <div className="bg-gradient-to-br from-red-50/30 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold">3</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">Top 4 Material GRI Risks (2026–2036)</h3>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-4">Ranked by combined enforcement probability, financial exposure, and regulatory trajectory.</p>
+                      <div className="space-y-3">
+                        {[
+                          { risk: "GRI 305 Emissions", pillar: "Environmental", level: "CRITICAL", levelColor: "bg-red-600", drivers: "EU ETS Phase 4; US EPA Methane Fee ($900–1,500/t); CBAM (2026); SEC Climate Rule", exposure: "ETS allowance shortfall; methane fees; CBAM tariffs; ESG capital market exclusion", detail: "Five simultaneous mechanisms create overlapping compliance obligations: EU ETS Phase 4 drives carbon prices toward €80–120/tCO₂e by 2027; US EPA Methane Emissions Reduction Program imposes fees of $900–1,500/tonne; EU Methane Regulation targets upstream O&G imports from 2030; CBAM fully operational from 2026; CSRD/ESRS E1 mandates quantified GHG disclosure." },
+                          { risk: "GRI 403 OHS", pillar: "Social", level: "RAPIDLY RISING", levelColor: "bg-orange-500", drivers: "EU OSH Framework 2021–27; ISO 45001; CSRD ESRS S1; OSHA enforcement", exposure: "OSHA fines up to $156K/violation; workers' comp 2–5% of payroll; class action exposure", detail: "Rig floor operations create structurally elevated OHS risk profiles. OSHA maximum willful-violation penalty stands at $156,259 per incident. Contractors with LTIRs 2–3× industry benchmark face accelerating contract disqualification from NOC tenders." },
+                          { risk: "GRI 201 / TCFD", pillar: "Economic", level: "CRITICAL", levelColor: "bg-red-600", drivers: "TCFD mandatory (UK, EU, NZ, Canada); ISSB IFRS S1/S2; SEC climate rule 2026–28", exposure: "WACC premium +30–60 bps for ESG laggards; CSRD fines €5–50M; stranded asset risk", detail: "ISSB IFRS S1/S2 requires companies to quantify financial impact of climate-related risks under 1.5°C, 2°C, and BAU scenarios. Stranded asset write-down risk is the highest-stakes financial exposure for onshore programs with payback periods exceeding ten years." },
+                          { risk: "GRI 302 Energy", pillar: "Environmental", level: "ELEVATED", levelColor: "bg-yellow-500", drivers: "EU CBAM (2026); revised EU EED; RED III (42.5% RE by 2030); EU ETS Phase 4", exposure: "CBAM tariff exposure; ETS allowance shortfall; green finance ineligibility", detail: "Rig diesel consumption — typically 50–400 gallons/day per rig — feeds directly into Scope 1 reporting. Contractors that delay fleet electrification face higher operating costs, ESG-linked contract disqualification, and ineligibility for ESG-linked credit facilities." },
+                        ].map((r, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-100 p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-gray-800">{r.risk}</span>
+                                <span className="text-[9px] text-gray-400 font-medium">{r.pillar}</span>
+                              </div>
+                              <span className={`${r.levelColor} text-white text-[8px] font-bold px-2 py-0.5 rounded-full tracking-wider`}>{r.level}</span>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-2 mb-3">
+                              <div><p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Key Drivers</p><p className="text-[11px] text-gray-500">{r.drivers}</p></div>
+                              <div><p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Financial Exposure</p><p className="text-[11px] text-gray-500">{r.exposure}</p></div>
+                            </div>
+                            <p className="text-[11px] text-gray-400 leading-relaxed">{r.detail}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 5. ESG Solutions */}
+                    <div className="bg-gradient-to-br from-emerald-50/50 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">4</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">ESG Solutions: Priority Investment Categories</h3>
+                      </div>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { title: "Electric & Hybrid Rig Conversion", gri: "GRI 302 + GRI 305", desc: "Reduces CBAM exposure, lowers EU ETS allowance shortfall risk, qualifies for ESG-linked financing." },
+                          { title: "Methane Detection & Abatement", gri: "GRI 305", desc: "Addresses US EPA methane fee and EU Methane Regulation requirements for upstream operations." },
+                          { title: "CCUS Integration", gri: "GRI 305", desc: "Targets Scope 1 net abatement and carbon pricing risk across drilling operations." },
+                          { title: "AI ESG Monitoring SaaS", gri: "GRI 201 / TCFD", desc: "Supports TCFD disclosure and CSRD ESRS reporting compliance with automated data pipelines." },
+                          { title: "Produced Water Recycling", gri: "GRI 303", desc: "Addresses water intensity and IED effluent limits in water-stressed drilling basins." },
+                          { title: "OHS Digital Twin Systems", gri: "GRI 403", desc: "Real-time hazard monitoring for dropped objects, H₂S, well control and rotating machinery events." },
+                        ].map((s, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-100 p-4 hover:border-emerald-200 transition">
+                            <p className="text-[9px] font-bold text-emerald-600 tracking-wider mb-1">{s.gri}</p>
+                            <p className="text-sm font-semibold text-gray-800 mb-1.5">{s.title}</p>
+                            <p className="text-[11px] text-gray-500 leading-relaxed">{s.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 6. Top 10 KPIs */}
+                    <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold">5</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">GRI Top 10 KPIs: Energy Sector</h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead><tr className="bg-[#0A2540] text-white"><th className="px-3 py-2 text-left font-semibold rounded-tl-lg">#</th><th className="px-3 py-2 text-left font-semibold">GRI Topic</th><th className="px-3 py-2 text-left font-semibold rounded-tr-lg">Key Metrics & KPIs</th></tr></thead>
+                          <tbody>
+                            {[
+                              { n: 1, topic: "GRI 305 – Emissions", metrics: "Scope 1/2/3 GHG (tCO₂e); methane intensity (%); GHG intensity (tCO₂e/BOE); flaring intensity; net-zero pathway vs. IEA NZE" },
+                              { n: 2, topic: "GRI 302 – Energy", metrics: "Energy consumption — fuel + electricity (GJ); intensity (GJ/unit); renewable share (%); rig diesel consumption (gal/day)" },
+                              { n: 3, topic: "GRI 201 – Economic / TCFD", metrics: "Economic value generated/distributed; climate financial risk; stranded asset exposure ($B); carbon-adjusted EBITDA margin" },
+                              { n: 4, topic: "GRI 303 – Water", metrics: "Water withdrawal by source (m³); stressed-basin consumption; freshwater per well (M gal); produced water recycling rate" },
+                              { n: 5, topic: "GRI 304 – Biodiversity", metrics: "Sites in/near protected areas; well pad land disturbance (ha/well); pipeline corridor fragmentation; reclamation rate" },
+                              { n: 6, topic: "GRI 403 – OHS", metrics: "LTIR per million hrs; TRIR; fatality rate; process safety Tier 1/2 events; H₂S exposure incidents" },
+                              { n: 7, topic: "GRI 413 – Communities", metrics: "% operations with community engagement; significant negative impacts; FPIC processes; grievance resolution rate" },
+                              { n: 8, topic: "GRI 205 – Anti-Corruption", metrics: "Operations assessed for corruption (%); confirmed incidents; anti-corruption training coverage; EITI disclosure" },
+                              { n: 9, topic: "GRI 306 – Waste", metrics: "Hazardous/non-hazardous waste (tonnes); diversion rate (%); drilling cuttings per well; NORM waste handling" },
+                              { n: 10, topic: "GRI 401 – Employment", metrics: "Total employees by region/gender; new hires/turnover rate; benefits coverage; local hire rate at new developments" },
+                            ].map((r, i) => (
+                              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                <td className="px-3 py-2 font-bold text-emerald-600">{r.n}</td>
+                                <td className="px-3 py-2 font-semibold text-gray-700 whitespace-nowrap">{r.topic}</td>
+                                <td className="px-3 py-2 text-gray-500">{r.metrics}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* 7. Investor Landscape */}
+                    <div className="bg-gradient-to-br from-indigo-50/30 to-white rounded-xl border border-gray-200 p-6 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">6</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">Investor Landscape (2026–2031)</h3>
+                      </div>
+                      <div className="space-y-3">
+                        {[
+                          { segment: "Sovereign Wealth Funds", examples: "Norway GPFG, ADIA, GIC", framework: "UNPRI; Net Zero AM; TCFD", criteria: "Methane intensity; Scope 1+3; GRI 11 alignment; executive ESG pay linkage", posture: "CAUTIOUS", posColor: "text-amber-600 bg-amber-50" },
+                          { segment: "Pension Funds", examples: "CPPIB, CalPERS, USS", framework: "IORP II; TCFD; PRI", criteria: "Climate transition plan; LTIR benchmarks; board ESG oversight; net-zero pledge", posture: "ENGAGED", posColor: "text-blue-600 bg-blue-50" },
+                          { segment: "ESG-Screened ETFs", examples: "iShares MSCI, SPDR S&P", framework: "MSCI ESG; Sustainalytics; FTSE4Good", criteria: "GHG intensity; water intensity; OHS score; governance", posture: "QUANTITATIVE", posColor: "text-purple-600 bg-purple-50" },
+                          { segment: "Green Bond Investors", examples: "ICMA GBP, EU Taxonomy, SLLs", framework: "Green Bond Principles", criteria: "Use of proceeds: electric rig, methane abatement, CCUS, geothermal", posture: "OPPORTUNITY", posColor: "text-emerald-600 bg-emerald-50" },
+                        ].map((r, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-100 p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div><p className="text-sm font-semibold text-gray-800">{r.segment}</p><p className="text-[10px] text-gray-400">{r.examples}</p></div>
+                              <span className={`${r.posColor} text-[9px] font-bold px-2.5 py-1 rounded-full`}>{r.posture}</span>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-2">
+                              <div><p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Framework</p><p className="text-[11px] text-gray-500">{r.framework}</p></div>
+                              <div><p className="text-[9px] font-bold text-gray-400 uppercase mb-0.5">Screening Criteria</p><p className="text-[11px] text-gray-500">{r.criteria}</p></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 8. Performance Benchmarks */}
+                    <div className="bg-gradient-to-br from-teal-50/30 to-white rounded-xl border border-gray-200 p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">7</span>
+                        <h3 className="font-heading text-base font-bold text-gray-800">Key ESG Performance Benchmarks (2024)</h3>
+                      </div>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          { label: "GHG Emissions", value: "85–95 Mt", unit: "CO₂e/yr (Scope 1)", sub: "Methane leakage ~30–40% on GWP-100 basis" },
+                          { label: "Energy Intensity", value: "0.8–1.2", unit: "GJ per BOE drilled", sub: "Rig diesel 50–400 gal/day" },
+                          { label: "Water per Well", value: "15–25M", unit: "gallons (Permian)", sub: "Produced water recycling avg ~55%" },
+                          { label: "OHS (LTIR)", value: "0.38", unit: "per 200K hrs", sub: "Best-in-class operators <0.15" },
+                          { label: "Land Disturbance", value: "2–5 ha", unit: "per well pad", sub: ">12,000 km new pipeline corridors/yr" },
+                          { label: "Compliance Cost", value: "$0.8–2.4B", unit: "annually (sector-wide)", sub: "35–40% IOC CAPEX now includes ESG prequalification" },
+                        ].map((b, i) => (
+                          <div key={i} className="bg-white rounded-lg border border-gray-100 p-4 text-center">
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">{b.label}</p>
+                            <p className="text-2xl font-bold text-[#0A2540]">{b.value}</p>
+                            <p className="text-[10px] text-gray-500 font-medium">{b.unit}</p>
+                            <p className="text-[9px] text-gray-400 mt-1">{b.sub}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="text-[9px] text-gray-300 mt-4 italic">Source: GRI Standards (globalreporting.org). Regulatory citations per EU ETS Directive, EU CSRD 2022/2464, IRA 2022, ISSB IFRS S1/S2, SEC Final Climate Rule 2024. Sector benchmarks: IOGP, IEA, OSHA.</p>
+                  </div>
+                </Fade>
           )}
           {activeTab === "toc" && (
             <Fade><div className="max-w-3xl"><h2 className="font-heading text-xl font-bold text-gray-800 mb-2">Table of Contents</h2><p className="text-xs text-gray-400 mb-5">{report.pages} pages | PDF + Excel</p>
