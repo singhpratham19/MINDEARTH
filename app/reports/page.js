@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -32,6 +32,14 @@ const countries = [
 ];
 
 export default function ReportsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <ReportsPageInner />
+    </Suspense>
+  );
+}
+
+function ReportsPageInner() {
   const searchParams = useSearchParams();
   const [reports, setReports] = useState(fallbackReports);
   const [cat, setCat] = useState("all");
