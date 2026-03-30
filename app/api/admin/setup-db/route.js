@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const CREATE_TABLE_SQL = `
+const CREATE_REPORTS_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS reports (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS reports (
 );
 `;
 
-const POLICIES_SQL = `
+const REPORTS_POLICIES_SQL = `
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
@@ -52,6 +52,43 @@ DO $$ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'reports' AND policyname = 'Public read published') THEN
     CREATE POLICY "Public read published" ON reports FOR SELECT USING (published = true);
+  END IF;
+END $$;
+`;
+
+const CREATE_INSIGHTS_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS insights (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  slug TEXT UNIQUE NOT NULL,
+  title TEXT NOT NULL,
+  subtitle TEXT,
+  cat TEXT DEFAULT 'TRENDS',
+  date TEXT,
+  read_time TEXT,
+  author TEXT DEFAULT 'MindEarth Research Team',
+  img TEXT,
+  summary TEXT,
+  key_takeaways JSONB DEFAULT '[]'::jsonb,
+  sections JSONB DEFAULT '[]'::jsonb,
+  tags JSONB DEFAULT '[]'::jsonb,
+  related JSONB DEFAULT '[]'::jsonb,
+  pdf_url TEXT,
+  published BOOLEAN DEFAULT true,
+  featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+`;
+
+const INSIGHTS_POLICIES_SQL = `
+ALTER TABLE insights ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'insights' AND policyname = 'Service role full access insights') THEN
+    CREATE POLICY "Service role full access insights" ON insights FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'insights' AND policyname = 'Public read published insights') THEN
+    CREATE POLICY "Public read published insights" ON insights FOR SELECT USING (published = true);
   END IF;
 END $$;
 `;
@@ -68,51 +105,41 @@ export async function POST(req) {
     return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
   }
 
-  // Use the Supabase SQL API (available via PostgREST pg_net or the /sql endpoint)
-  // The service role key has full DB access
   try {
-    // Method 1: Use supabase-js to run raw SQL via the pg_catalog
     const supabase = createClient(supabaseUrl, serviceKey, {
       db: { schema: "public" },
     });
 
-    // Try running SQL through the Supabase HTTP SQL endpoint
-    const sqlRes = await fetch(`${supabaseUrl}/rest/v1/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        Prefer: "return=representation",
-      },
-    });
+    // Check which tables exist
+    const { error: reportsError } = await supabase.from("reports").select("id").limit(1);
+    const { error: insightsError } = await supabase.from("insights").select("id").limit(1);
 
-    // The most reliable way: use the postgres connection through the Supabase SQL API
-    // POST to /sql endpoint (available on Supabase projects)
-    const createRes = await fetch(`${supabaseUrl.replace('.supabase.co', '.supabase.co')}/rest/v1/rpc/`, {
-      method: "OPTIONS",
-      headers: { apikey: serviceKey },
-    });
+    const reportsExists = !reportsError || !reportsError.message.includes("schema cache");
+    const insightsExists = !insightsError || !insightsError.message.includes("schema cache");
 
-    // Since direct SQL execution through the REST API is limited,
-    // let's try a different approach: use the service role client to check if table exists
-    // and provide clear instructions
-    const { data, error } = await supabase.from("reports").select("id").limit(1);
-
-    if (error && error.message.includes("schema cache")) {
-      // Table doesn't exist — we need to create it
-      // Unfortunately, Supabase REST API doesn't support DDL directly
-      // Return the SQL for the user to run
-      return NextResponse.json({
-        success: false,
-        needsManualSetup: true,
-        message: "The reports table needs to be created. Copy the SQL below and run it in Supabase Dashboard → SQL Editor.",
-        sql: CREATE_TABLE_SQL + POLICIES_SQL,
-      });
+    if (reportsExists && insightsExists) {
+      return NextResponse.json({ success: true, message: "Database is already set up! Both reports and insights tables exist." });
     }
 
-    // Table exists
-    return NextResponse.json({ success: true, message: "Database is already set up!" });
+    // Build SQL for missing tables
+    let sql = "";
+    const missingTables = [];
+
+    if (!reportsExists) {
+      sql += CREATE_REPORTS_TABLE_SQL + REPORTS_POLICIES_SQL;
+      missingTables.push("reports");
+    }
+    if (!insightsExists) {
+      sql += CREATE_INSIGHTS_TABLE_SQL + INSIGHTS_POLICIES_SQL;
+      missingTables.push("insights");
+    }
+
+    return NextResponse.json({
+      success: false,
+      needsManualSetup: true,
+      message: `The following table(s) need to be created: ${missingTables.join(", ")}. Copy the SQL below and run it in Supabase Dashboard → SQL Editor.`,
+      sql,
+    });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

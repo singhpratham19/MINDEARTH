@@ -1,5 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -82,7 +83,39 @@ const articles = {
 
 export default function InsightArticle() {
   const { slug } = useParams();
-  const article = articles[slug];
+  const [dbArticle, setDbArticle] = useState(null);
+  const [pdfTooltip, setPdfTooltip] = useState(false);
+
+  useEffect(() => {
+    if (!slug) return;
+    fetch(`/api/insights/${slug}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.insight) {
+          // Map DB snake_case to component format
+          const i = json.insight;
+          setDbArticle({
+            cat: i.cat,
+            date: i.date,
+            read: i.read_time,
+            author: i.author,
+            title: i.title,
+            subtitle: i.subtitle,
+            img: i.img,
+            summary: i.summary,
+            keyTakeaways: i.key_takeaways || [],
+            sections: i.sections || [],
+            tags: i.tags || [],
+            related: i.related || [],
+            pdf_url: i.pdf_url,
+          });
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
+
+  // Use DB data if available, fall back to hardcoded
+  const article = dbArticle || articles[slug];
 
   if (!article) return (
     <>
@@ -135,7 +168,26 @@ export default function InsightArticle() {
           </div>
           <div className="flex items-center gap-2">
             <button className="text-[11px] font-semibold text-gray-500 border border-gray-200 px-3.5 py-1.5 rounded-md hover:bg-gray-50 transition">Share</button>
-            <button className="text-[11px] font-semibold text-white bg-[#0B6E4F] px-3.5 py-1.5 rounded-md hover:bg-[#095C42] transition">Download PDF</button>
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (article.pdf_url) {
+                    window.open(article.pdf_url, "_blank");
+                  } else {
+                    setPdfTooltip(true);
+                    setTimeout(() => setPdfTooltip(false), 2000);
+                  }
+                }}
+                className="text-[11px] font-semibold text-white bg-[#0B6E4F] px-3.5 py-1.5 rounded-md hover:bg-[#095C42] transition"
+              >
+                Download PDF
+              </button>
+              {pdfTooltip && (
+                <div className="absolute top-full mt-2 right-0 bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap z-50">
+                  PDF coming soon
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

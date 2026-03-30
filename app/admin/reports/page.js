@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { parseExcelToReport, downloadTemplate } from "@/lib/excel-parser";
+import { parseExcelToReport, downloadTemplate, parseExcelToInsight, downloadInsightTemplate } from "@/lib/excel-parser";
 
 const API = "/api/admin/reports/content";
+const INSIGHTS_API = "/api/admin/insights";
 
 export default function ReportsCMS() {
   const [password, setPassword] = useState("");
@@ -15,8 +16,12 @@ export default function ReportsCMS() {
   const [previewTab, setPreviewTab] = useState("overview");
   const [dbMissing, setDbMissing] = useState(false);
   const [setupSql, setSetupSql] = useState("");
+  const [cmsTab, setCmsTab] = useState("reports"); // "reports" | "insights"
+  const [insights, setInsights] = useState([]);
+  const [insightPreview, setInsightPreview] = useState(null);
   const fileRef = useRef();
   const imgRef = useRef();
+  const insightFileRef = useRef();
 
   const authHeader = { Authorization: `Bearer ${password}` };
 
@@ -38,7 +43,19 @@ export default function ReportsCMS() {
     } catch { setReports([]); }
   }, [password]);
 
-  useEffect(() => { if (authed) fetchReports(); }, [authed, fetchReports]);
+  const fetchInsights = useCallback(async () => {
+    try {
+      const res = await fetch(INSIGHTS_API, { headers: { Authorization: `Bearer ${password}` } });
+      if (res.ok) {
+        const json = await res.json();
+        setInsights(json.insights || []);
+      } else {
+        setInsights([]);
+      }
+    } catch { setInsights([]); }
+  }, [password]);
+
+  useEffect(() => { if (authed) { fetchReports(); fetchInsights(); } }, [authed, fetchReports, fetchInsights]);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("admin_pw");
@@ -184,6 +201,72 @@ export default function ReportsCMS() {
     setLoading(false);
   };
 
+  // ── INSIGHT HANDLERS ──
+  const handleInsightFile = async (file) => {
+    if (!file) return;
+    setLoading(true);
+    setMsg({ text: "", ok: true });
+    try {
+      const buffer = await file.arrayBuffer();
+      const insight = parseExcelToInsight(new Uint8Array(buffer));
+      if (!insight.title) throw new Error("No title found. Make sure the 'Basic Info' sheet has a 'Title' row.");
+      setInsightPreview(insight);
+      setMsg({ text: `Parsed "${insight.title}" — review below and click Publish.`, ok: true });
+    } catch (err) {
+      setMsg({ text: `Error parsing Excel: ${err.message}`, ok: false });
+      setInsightPreview(null);
+    }
+    setLoading(false);
+  };
+
+  const publishInsight = async () => {
+    if (!insightPreview) return;
+    setLoading(true);
+    setMsg({ text: "", ok: true });
+    try {
+      const existing = insights.find(i => i.slug === insightPreview.slug);
+      const method = existing ? "PUT" : "POST";
+      const res = await fetch(INSIGHTS_API, {
+        method,
+        headers: { ...authHeader, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...insightPreview, published: true }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to save");
+      setMsg({ text: `Insight "${insightPreview.title}" ${existing ? "updated" : "created"} successfully!`, ok: true });
+      setInsightPreview(null);
+      fetchInsights();
+    } catch (err) {
+      setMsg({ text: err.message, ok: false });
+    }
+    setLoading(false);
+  };
+
+  const deleteInsight = async (slug) => {
+    if (!confirm(`Delete insight "${slug}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`${INSIGHTS_API}?slug=${slug}`, { method: "DELETE", headers: authHeader });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      setMsg({ text: `Deleted insight "${slug}"`, ok: true });
+      fetchInsights();
+    } catch (err) { setMsg({ text: err.message, ok: false }); }
+  };
+
+  const seedInsights = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/seed-insights", { method: "POST", headers: authHeader });
+      const json = await res.json();
+      if (json.error) {
+        setMsg({ text: json.error, ok: false });
+      } else {
+        setMsg({ text: json.message || "Seeded insights!", ok: true });
+      }
+      fetchInsights();
+    } catch (err) { setMsg({ text: err.message, ok: false }); }
+    setLoading(false);
+  };
+
   /* ── LOGIN ── */
   if (!authed) {
     return (
@@ -214,11 +297,33 @@ export default function ReportsCMS() {
             <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </div>
-            <h1 className="font-heading text-lg font-bold text-gray-900">MindEarth Report CMS</h1>
+            <h1 className="font-heading text-lg font-bold text-gray-900">MindEarth CMS</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={seedReports} disabled={loading} className="text-xs text-gray-500 hover:text-emerald-600 transition px-3 py-2 rounded-lg hover:bg-gray-50">Seed Existing Reports</button>
+            {cmsTab === "reports" && (
+              <button onClick={seedReports} disabled={loading} className="text-xs text-gray-500 hover:text-emerald-600 transition px-3 py-2 rounded-lg hover:bg-gray-50">Seed Existing Reports</button>
+            )}
+            {cmsTab === "insights" && (
+              <button onClick={seedInsights} disabled={loading} className="text-xs text-gray-500 hover:text-emerald-600 transition px-3 py-2 rounded-lg hover:bg-gray-50">Seed Existing Insights</button>
+            )}
             <button onClick={() => { sessionStorage.removeItem("admin_pw"); setAuthed(false); }} className="text-xs text-gray-400 hover:text-red-500 transition px-3 py-2 rounded-lg hover:bg-gray-50">Logout</button>
+          </div>
+        </div>
+        {/* Tab Navigation */}
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex gap-0 border-b-0">
+            {[
+              { key: "reports", label: "Reports" },
+              { key: "insights", label: "Insights" },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => { setCmsTab(tab.key); setMsg({ text: "", ok: true }); }}
+                className={`px-5 py-2.5 text-sm font-semibold border-b-2 transition ${cmsTab === tab.key ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-400 hover:text-gray-600"}`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -229,6 +334,9 @@ export default function ReportsCMS() {
             {msg.text}
           </div>
         )}
+
+        {/* ══════ REPORTS TAB ══════ */}
+        {cmsTab === "reports" && (<>
 
         {/* Database Setup Banner */}
         {dbMissing && (
@@ -722,7 +830,162 @@ export default function ReportsCMS() {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-8 mb-4">MindEarth Report CMS &middot; Upload Excel &rarr; Auto-format &rarr; Publish</p>
+        </>)}
+
+        {/* ══════ INSIGHTS TAB ══════ */}
+        {cmsTab === "insights" && (<>
+
+        {/* Insight Upload Area */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-heading text-lg font-bold text-gray-900">Upload Insight</h2>
+              <p className="text-sm text-gray-500 mt-1">Upload an Excel file to create or update an insight article.</p>
+            </div>
+            <button onClick={downloadInsightTemplate} className="flex items-center gap-2 bg-gray-100 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              Download Insight Template
+            </button>
+          </div>
+
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); handleInsightFile(e.dataTransfer.files?.[0]); }}
+            onClick={() => insightFileRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${dragOver ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-300 hover:bg-gray-50"}`}
+          >
+            <input ref={insightFileRef} type="file" accept=".xlsx,.xls" onChange={(e) => handleInsightFile(e.target.files?.[0])} className="hidden" />
+            <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            </div>
+            {loading ? <p className="text-sm text-gray-500 font-medium">Processing...</p> : (
+              <>
+                <p className="text-sm font-semibold text-gray-700 mb-1">Drop your Insight Excel file here or click to browse</p>
+                <p className="text-xs text-gray-400">Supports .xlsx and .xls files</p>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Insight Preview */}
+        {insightPreview && (
+          <div className="bg-white rounded-2xl border-2 border-sky-200 shadow-sm mb-8 overflow-hidden">
+            <div className="bg-sky-50 border-b border-sky-200 px-8 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="w-3 h-3 bg-sky-500 rounded-full animate-pulse" />
+                <h2 className="font-heading text-lg font-bold text-gray-900">Insight Preview</h2>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setInsightPreview(null)} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition">Cancel</button>
+                <button onClick={publishInsight} disabled={loading} className="text-sm text-white font-semibold bg-sky-600 hover:bg-sky-700 px-6 py-2 rounded-lg transition disabled:opacity-50">
+                  {loading ? "Publishing..." : insights.find(i => i.slug === insightPreview.slug) ? "Update Insight" : "Publish Insight"}
+                </button>
+              </div>
+            </div>
+            <div className="p-8">
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`text-[10px] font-bold tracking-wider uppercase ${insightPreview.cat === "TRENDS" ? "text-emerald-600" : insightPreview.cat === "DATA" ? "text-sky-600" : "text-amber-600"}`}>{insightPreview.cat}</span>
+                  <span className="text-xs text-gray-400">{insightPreview.date}</span>
+                  <span className="text-xs text-gray-400">{insightPreview.read_time} read</span>
+                </div>
+                <h3 className="font-heading text-2xl font-bold text-gray-900 mb-2">{insightPreview.title}</h3>
+                {insightPreview.subtitle && <p className="text-sm text-gray-500 mb-3">{insightPreview.subtitle}</p>}
+                <p className="text-sm text-gray-600 leading-relaxed">{insightPreview.summary}</p>
+              </div>
+              {insightPreview.img && (
+                <div className="rounded-xl overflow-hidden border border-gray-200 mb-6">
+                  <img src={insightPreview.img} alt={insightPreview.title} className="w-full h-48 object-cover" />
+                </div>
+              )}
+              {insightPreview.key_takeaways?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-gray-800 mb-2">Key Takeaways</h4>
+                  <ul className="space-y-1">
+                    {insightPreview.key_takeaways.map((t, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-gray-600"><span className="text-emerald-500 mt-0.5">&#10003;</span>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {insightPreview.sections?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-bold text-gray-800 mb-3">Sections ({insightPreview.sections.length})</h4>
+                  <div className="space-y-3">
+                    {insightPreview.sections.map((s, i) => (
+                      <div key={i} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <h5 className="text-sm font-semibold text-gray-800 mb-1">{s.heading}</h5>
+                        <p className="text-xs text-gray-500 line-clamp-2">{s.body}</p>
+                        {s.pullQuote && <p className="text-xs text-sky-600 italic mt-2 border-l-2 border-sky-300 pl-2">&ldquo;{s.pullQuote}&rdquo;</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                {insightPreview.tags?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800 mb-2">Tags</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {insightPreview.tags.map(t => <span key={t} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{t}</span>)}
+                    </div>
+                  </div>
+                )}
+                {insightPreview.related?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800 mb-2">Related Slugs</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {insightPreview.related.map(s => <span key={s} className="text-[11px] bg-sky-50 text-sky-600 px-2 py-0.5 rounded">{s}</span>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Existing Insights */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+          <h2 className="font-heading text-lg font-bold text-gray-900 mb-1">Published Insights</h2>
+          <p className="text-sm text-gray-500 mb-6">{insights.length} insight{insights.length !== 1 ? "s" : ""} in database</p>
+
+          {insights.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+              <p className="text-sm font-medium">No insights yet</p>
+              <p className="text-xs mt-1">Upload an Excel file or seed existing insights to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {insights.map(i => (
+                <div key={i.slug} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition group">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-gray-800 truncate">{i.title}</h3>
+                      <span className={`text-[10px] font-bold tracking-wider uppercase ${i.cat === "TRENDS" ? "text-emerald-600" : i.cat === "DATA" ? "text-sky-600" : "text-amber-600"}`}>{i.cat}</span>
+                      {i.featured && <span className="text-[10px] font-medium bg-amber-50 text-amber-700 px-2 py-0.5 rounded">Featured</span>}
+                      {i.published ? (
+                        <span className="text-[10px] font-medium bg-green-50 text-green-600 px-2 py-0.5 rounded">Live</span>
+                      ) : (
+                        <span className="text-[10px] font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Draft</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">{i.slug} &middot; {i.date} &middot; {i.read_time}</p>
+                  </div>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+                    <a href={`/insights/${i.slug}`} target="_blank" className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 transition">View</a>
+                    <button onClick={() => deleteInsight(i.slug)} className="text-xs text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        </>)}
+
+        <p className="text-center text-xs text-gray-400 mt-8 mb-4">MindEarth CMS &middot; Upload Excel &rarr; Auto-format &rarr; Publish</p>
       </div>
     </div>
   );

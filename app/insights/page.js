@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,9 +18,33 @@ const articles = [
 
 export default function InsightsPage() {
   const [filter, setFilter] = useState("ALL");
+  const [allArticles, setAllArticles] = useState(articles);
+
+  useEffect(() => {
+    fetch("/api/insights")
+      .then(r => r.json())
+      .then(json => {
+        if (json.insights && json.insights.length > 0) {
+          // Map DB format to listing format
+          const dbArticles = json.insights.map(i => ({
+            slug: i.slug,
+            tag: i.cat,
+            title: i.title,
+            desc: i.summary || "",
+            date: i.date || "",
+            read: i.read_time || "",
+            featured: i.featured || false,
+            img: i.img || "",
+          }));
+          setAllArticles(dbArticles);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const tabs = ["ALL", "RESEARCH", "CASE_STUDY", "WHITE_PAPER"];
-  const feat = articles.find(a => a.featured);
-  const rest = (filter === "ALL" ? articles : articles.filter(a => a.tag === filter)).filter(a => !a.featured);
+  const feat = allArticles.find(a => a.featured);
+  const rest = (filter === "ALL" ? allArticles : allArticles.filter(a => a.tag === filter)).filter(a => !a.featured);
 
   return (
     <>
