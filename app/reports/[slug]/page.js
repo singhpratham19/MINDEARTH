@@ -60,8 +60,43 @@ export default function ReportDetail() {
 
   if (!report) return <div className="p-20 text-center text-gray-400">Report not found</div>;
 
-  const baseVal = parseFloat(report.size.replace(/[$BTM,]/g, "")) || 50;
-  const cagrNum = parseFloat(report.cagr) / 100 || 0.1;
+  // Ensure safe defaults for all fields the template uses
+  const rpt = {
+    ...report,
+    size: report.size || "$0",
+    cagr: report.cagr || "0%",
+    price: report.price || 0,
+    baseYear: report.baseYear || "2025",
+    period: report.period || "",
+    code: report.code || "",
+    badge: report.badge || "",
+    cat: report.cat || "",
+    desc: report.desc || "",
+    overview: report.overview || "",
+    img: report.img || "",
+    companies: report.companies || [],
+    domains: report.domains || [],
+    companyTable: report.companyTable || [],
+    segments: report.segments || [],
+    segmentsByTech: report.segmentsByTech || [],
+    segmentsByApp: report.segmentsByApp || [],
+    regions: report.regions || [],
+    segmentTables: report.segmentTables || {},
+    keyTakeaways: report.keyTakeaways || [],
+    drivers: report.drivers || [],
+    restraints: report.restraints || [],
+    regionTable: report.regionTable || [],
+    developments: report.developments || [],
+    analysisContent: report.analysisContent || {},
+    toc: Array.isArray(report.toc) ? report.toc : [],
+    esgContent: report.esgContent || null,
+    marketConcentration: report.marketConcentration || "",
+    fastestGrowingRegion: report.fastestGrowingRegion || "",
+    largestRegion: report.largestRegion || "",
+  };
+
+  const baseVal = parseFloat(rpt.size.replace(/[$BTM,]/g, "")) || 50;
+  const cagrNum = parseFloat(rpt.cagr) / 100 || 0.1;
   const chartData = Array.from({ length: 7 }, (_, i) => ({ year: String(2025 + i) + (i >= 5 ? "F" : ""), value: Math.round(baseVal * Math.pow(1 + cagrNum, i) * 10) / 10 }));
   const licenses = [["Single User", report.price, "1 user"], ["Multi User", report.price + 1000, "Up to 5 users"], ["Enterprise", report.price + 2500, "Unlimited + Excel"]];
   const related = allReports.filter(r => r.slug !== report.slug).slice(0, 2);
