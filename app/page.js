@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Fade from "@/components/Fade";
@@ -23,9 +24,59 @@ const whyCards = [
 export default function Home() {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [highlightIdx, setHighlightIdx] = useState(-1);
   const [tab, setTab] = useState("all");
   const tags = ["Green Finance", "BRSR", "Carbon Credits", "Renewable Energy", "EV Battery"];
   const filtered = tab === "all" ? reports : reports.filter(r => r.cat === tab);
+  const router = useRouter();
+  const dropdownRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Live search results
+  const searchResults = query.trim().length > 0
+    ? reports.filter(r => {
+        const q = query.toLowerCase();
+        return r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q) || (r.segments && r.segments.some(s => s.toLowerCase().includes(q))) || (r.regions && r.regions.some(reg => reg.toLowerCase().includes(q)));
+      }).slice(0, 6)
+    : [];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) && inputRef.current && !inputRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      router.push(`/reports?q=${encodeURIComponent(query.trim())}`);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIdx(prev => (prev < searchResults.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIdx(prev => (prev > 0 ? prev - 1 : searchResults.length - 1));
+    } else if (e.key === "Enter") {
+      if (highlightIdx >= 0 && searchResults[highlightIdx]) {
+        router.push(`/reports/${searchResults[highlightIdx].slug}`);
+        setShowDropdown(false);
+      } else {
+        handleSearch();
+      }
+    } else if (e.key === "Escape") {
+      setShowDropdown(false);
+    }
+  };
 
   return (
     <>
@@ -53,21 +104,58 @@ export default function Home() {
               <p className="text-[15px] text-white/60 max-w-lg mb-10 leading-relaxed">Institutional-grade ESG market research across 25+ industries and 40+ countries.</p>
             </Fade>
             <Fade delay={0.18}>
-              <div className="relative max-w-xl mb-5">
-                <div className={`flex bg-white rounded-xl overflow-hidden transition-all duration-300 ${focused ? "shadow-2xl ring-2 ring-[#0B6E4F]/20" : "shadow-lg"}`}>
+              <div className="relative max-w-xl mb-5" ref={dropdownRef}>
+                <div className={`flex bg-white rounded-xl overflow-hidden transition-all duration-300 ${focused ? "shadow-2xl ring-2 ring-[#0B6E4F]/20" : "shadow-lg"} ${showDropdown && searchResults.length > 0 ? "rounded-b-none" : ""}`}>
                   <div className="flex items-center pl-5 pr-1 text-brand-muted">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" strokeWidth="2"/></svg>
                   </div>
-                  <input value={query} onChange={e => setQuery(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder="Search ESG reports by industry, topic, or region..." className="flex-1 py-4 px-3 text-[15px] text-brand-dark bg-transparent outline-none placeholder:text-brand-muted" />
-                  <button className="bg-[#0B6E4F] text-white text-sm font-semibold px-6 m-2 rounded-lg hover:bg-[#095C42] transition-colors duration-200 whitespace-nowrap">Search Reports</button>
+                  <input ref={inputRef} value={query} onChange={e => { setQuery(e.target.value); setShowDropdown(true); setHighlightIdx(-1); }} onFocus={() => { setFocused(true); if (query.trim()) setShowDropdown(true); }} onBlur={() => setFocused(false)} onKeyDown={handleKeyDown} placeholder="Search ESG reports by industry, topic, or region..." className="flex-1 py-4 px-3 text-[15px] text-brand-dark bg-transparent outline-none placeholder:text-brand-muted" />
+                  <button onClick={handleSearch} className="bg-[#0B6E4F] text-white text-sm font-semibold px-6 m-2 rounded-lg hover:bg-[#095C42] transition-colors duration-200 whitespace-nowrap">Search Reports</button>
                 </div>
+
+                {/* Live autocomplete dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full bg-white rounded-b-xl shadow-2xl border-t border-gray-100 z-50 max-h-[420px] overflow-y-auto">
+                    <div className="px-4 py-2 border-b border-gray-50">
+                      <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{searchResults.length} report{searchResults.length > 1 ? "s" : ""} found</span>
+                    </div>
+                    {searchResults.map((r, i) => (
+                      <button key={r.slug} onMouseDown={(e) => { e.preventDefault(); router.push(`/reports/${r.slug}`); setShowDropdown(false); }} onMouseEnter={() => setHighlightIdx(i)} className={`w-full text-left px-4 py-3.5 flex items-start gap-3.5 transition-colors duration-100 ${highlightIdx === i ? "bg-[#F0FAF6]" : "hover:bg-gray-50"} ${i < searchResults.length - 1 ? "border-b border-gray-50" : ""}`}>
+                        <div className="w-8 h-8 rounded-lg bg-[#E6F4EF] flex items-center justify-center shrink-0 mt-0.5">
+                          <svg className="w-4 h-4 text-[#0B6E4F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[14px] font-semibold text-[#0A2540] leading-snug truncate">{r.title}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-bold text-[#0B6E4F] bg-[#E6F4EF] px-2 py-0.5 rounded">{r.cat}</span>
+                            {r.size && <span className="text-[10px] font-medium text-gray-500">Market Size: {r.size}</span>}
+                            <span className="text-[10px] font-medium text-gray-400">CAGR: {r.cagr}</span>
+                          </div>
+                        </div>
+                        <svg className="w-4 h-4 text-gray-300 shrink-0 mt-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                      </button>
+                    ))}
+                    <button onMouseDown={(e) => { e.preventDefault(); handleSearch(); }} className="w-full text-center py-3 text-[13px] font-semibold text-[#0B6E4F] hover:bg-[#F0FAF6] transition-colors border-t border-gray-100">
+                      View all results for &ldquo;{query}&rdquo; →
+                    </button>
+                  </div>
+                )}
+
+                {/* No results state */}
+                {showDropdown && query.trim().length > 0 && searchResults.length === 0 && (
+                  <div className="absolute left-0 right-0 top-full bg-white rounded-b-xl shadow-2xl border-t border-gray-100 z-50 py-8 text-center">
+                    <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" strokeWidth="2"/></svg>
+                    <p className="text-sm text-gray-500 font-medium">No reports found for &ldquo;{query}&rdquo;</p>
+                    <p className="text-xs text-gray-400 mt-1">Try searching by industry, region, or topic</p>
+                  </div>
+                )}
               </div>
             </Fade>
             <Fade delay={0.22}>
               <div className="flex gap-2.5 flex-wrap mb-8">
                 <span className="text-[11px] text-white/60 leading-6">Trending:</span>
                 {tags.map(t => (
-                  <span key={t} className="text-[11px] text-white/80 border border-white/30 rounded-full px-3.5 py-1.5 cursor-pointer hover:bg-[#0B6E4F] hover:text-white hover:border-[#0B6E4F] transition-all duration-200 font-medium">{t}</span>
+                  <span key={t} onClick={() => { setQuery(t); setShowDropdown(true); setHighlightIdx(-1); inputRef.current?.focus(); }} className="text-[11px] text-white/80 border border-white/30 rounded-full px-3.5 py-1.5 cursor-pointer hover:bg-[#0B6E4F] hover:text-white hover:border-[#0B6E4F] transition-all duration-200 font-medium">{t}</span>
                 ))}
               </div>
             </Fade>

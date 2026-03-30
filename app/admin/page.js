@@ -98,6 +98,11 @@ export default function AdminPanel() {
     { k: "files", l: "Report Files", icon: "📁" },
   ];
 
+  const goToCMS = () => {
+    sessionStorage.setItem("adminPassword", password);
+    window.location.href = "/admin/reports";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -106,7 +111,10 @@ export default function AdminPanel() {
           <div className="w-8 h-8 rounded-lg bg-[#0B6E4F] flex items-center justify-center text-xs font-bold">ME</div>
           <span className="font-semibold text-sm">MindEarth Admin</span>
         </div>
-        <button onClick={() => { setAuthed(false); setPassword(""); }} className="text-xs text-white/60 hover:text-white">Logout</button>
+        <div className="flex items-center gap-4">
+          <button onClick={goToCMS} className="text-xs bg-emerald-600 text-white px-4 py-1.5 rounded-lg hover:bg-emerald-700 font-semibold transition">Report CMS</button>
+          <button onClick={() => { setAuthed(false); setPassword(""); }} className="text-xs text-white/60 hover:text-white">Logout</button>
+        </div>
       </div>
 
       {/* Tabs */}

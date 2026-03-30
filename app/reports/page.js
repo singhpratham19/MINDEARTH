@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Fade from "@/components/Fade";
-import { reports } from "@/lib/data";
+import { reports as fallbackReports } from "@/lib/data";
 
 const industries = [
   "Energy & Power",
@@ -31,13 +32,21 @@ const countries = [
 ];
 
 export default function ReportsPage() {
+  const searchParams = useSearchParams();
+  const [reports, setReports] = useState(fallbackReports);
   const [cat, setCat] = useState("all");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(searchParams.get("q") || "");
   const [regionOpen, setRegionOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const catMap = { "Energy & Power": "Energy", "Financial Services": "Financial", "ESG & Sustainability": "Sustainability", "Technology": "Technology" };
+
+  useEffect(() => {
+    fetch("/api/reports").then(r => r.ok ? r.json() : null).then(data => {
+      if (data && data.length) setReports(data);
+    }).catch(() => {});
+  }, []);
 
   const filtered = reports.filter(r => {
     const matchCat = cat === "all" || r.cat === catMap[cat];
