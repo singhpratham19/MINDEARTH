@@ -11,7 +11,7 @@ const articles = {
     cat: "TRENDS",
     date: "March 15, 2026",
     read: "12 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     title: "Regulatory Acceleration Across Emerging Markets",
     subtitle: "MindEarth ESG Trends Q1 2026",
     img: "https://images.unsplash.com/photo-1577415124269-fc1140a69e91?w=1800&q=80",
@@ -35,7 +35,7 @@ const articles = {
     cat: "DATA",
     date: "February 28, 2026",
     read: "10 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     title: "Carbon Markets Grow 22% YoY as Institutional Demand Accelerates",
     subtitle: "MindEarth Market Intelligence",
     img: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1800&q=80",
@@ -59,7 +59,7 @@ const articles = {
     cat: "OUTLOOK",
     date: "February 10, 2026",
     read: "15 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     title: "Green Bond Issuance to Cross $1T by 2028",
     subtitle: "Sustainable Finance Outlook",
     img: "https://images.unsplash.com/photo-1618044733300-9472054094ee?w=1800&q=80",
@@ -160,7 +160,7 @@ export default function InsightArticle() {
         <div className="max-w-[860px] mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-6 text-[12px] text-gray-500">
             <span className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-[10px] font-bold">ME</span>
+              <span className="w-8 h-8 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-[10px] font-bold">SG</span>
               <span className="font-medium text-gray-800">{article.author}</span>
             </span>
             <span>{article.read} read</span>

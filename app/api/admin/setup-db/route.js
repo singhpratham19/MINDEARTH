@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS insights (
   cat TEXT DEFAULT 'TRENDS',
   date TEXT,
   read_time TEXT,
-  author TEXT DEFAULT 'MindEarth Research Team',
+  author TEXT DEFAULT 'Saloni Gaikwad',
   img TEXT,
   summary TEXT,
   key_takeaways JSONB DEFAULT '[]'::jsonb,

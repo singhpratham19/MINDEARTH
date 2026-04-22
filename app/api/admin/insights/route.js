@@ -14,7 +14,7 @@ function mapInsightToDB(insight) {
     cat: insight.cat || "TRENDS",
     date: insight.date || null,
     read_time: insight.read_time || insight.readTime || insight.read || null,
-    author: insight.author || "MindEarth Research Team",
+    author: insight.author || "Saloni Gaikwad",
     img: insight.img || null,
     summary: insight.summary || null,
     key_takeaways: insight.key_takeaways || insight.keyTakeaways || [],

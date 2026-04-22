@@ -19,7 +19,7 @@ const detailArticles = [
     cat: "TRENDS",
     date: "March 15, 2026",
     read_time: "12 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     img: "https://images.unsplash.com/photo-1577415124269-fc1140a69e91?w=1800&q=80",
     summary: "A 34% increase in mandatory ESG disclosure requirements across South Asia and the Middle East is reshaping corporate reporting obligations and investor expectations in emerging markets.",
     key_takeaways: [
@@ -46,7 +46,7 @@ const detailArticles = [
     cat: "DATA",
     date: "February 28, 2026",
     read_time: "10 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     img: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1800&q=80",
     summary: "Voluntary carbon credit transactions reached $2.8B in 2025, driven by corporate net-zero commitments and the operationalisation of Article 6 of the Paris Agreement.",
     key_takeaways: [
@@ -73,7 +73,7 @@ const detailArticles = [
     cat: "OUTLOOK",
     date: "February 10, 2026",
     read_time: "15 min",
-    author: "MindEarth Research Team",
+    author: "Saloni Gaikwad",
     img: "https://images.unsplash.com/photo-1618044733300-9472054094ee?w=1800&q=80",
     summary: "Asia-Pacific markets contributing 38% of new issuance volume as sovereign programs scale, with green, social, sustainability, and sustainability-linked bonds collectively surpassing $800B in annual issuance.",
     key_takeaways: [
@@ -145,7 +145,7 @@ export async function POST(req) {
       cat: a.tag,
       date: a.date,
       read_time: a.read_time,
-      author: "MindEarth Research Team",
+      author: "Saloni Gaikwad",
       img: a.img,
       summary: a.desc,
       key_takeaways: [],
