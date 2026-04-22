@@ -155,38 +155,47 @@ export default function InsightArticle() {
         </div>
       </section>
 
-      {/* ═══ META BAR ═══ */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[860px] mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-6 text-[12px] text-gray-500">
-            <span className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-[10px] font-bold">SG</span>
-              <span className="font-medium text-gray-800">{article.author}</span>
-            </span>
-            <span>{article.read} read</span>
-            <span className={`font-bold tracking-wider uppercase ${article.cat === "TRENDS" ? "text-emerald-600" : article.cat === "DATA" ? "text-sky-600" : "text-amber-600"}`}>{article.cat}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="text-[11px] font-semibold text-gray-500 border border-gray-200 px-3.5 py-1.5 rounded-md hover:bg-gray-50 transition">Share</button>
-            <div className="relative">
-              <button
-                onClick={() => {
-                  if (article.pdf_url) {
-                    window.open(article.pdf_url, "_blank");
-                  } else {
-                    setPdfTooltip(true);
-                    setTimeout(() => setPdfTooltip(false), 2000);
-                  }
-                }}
-                className="text-[11px] font-semibold text-white bg-[#0B6E4F] px-3.5 py-1.5 rounded-md hover:bg-[#095C42] transition"
-              >
-                Download PDF
-              </button>
-              {pdfTooltip && (
-                <div className="absolute top-full mt-2 right-0 bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap z-50">
-                  PDF coming soon
+      {/* ═══ AUTHOR & META BAR (KPMG-style) ═══ */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-[860px] mx-auto px-6 py-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            {/* Author block */}
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-sm font-bold tracking-wide shrink-0">SG</div>
+              <div>
+                <p className="text-[17px] font-semibold text-[#0A2540] leading-tight">{article.author}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-[13px] text-gray-500">{article.date}</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-300" />
+                  <span className="text-[13px] text-gray-500">{article.read} read</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-300" />
+                  <span className={`text-[11px] font-bold tracking-[0.15em] uppercase px-2.5 py-0.5 rounded-full ${article.cat === "TRENDS" ? "text-emerald-700 bg-emerald-50" : article.cat === "DATA" ? "text-sky-700 bg-sky-50" : "text-amber-700 bg-amber-50"}`}>{article.cat}</span>
                 </div>
-              )}
+              </div>
+            </div>
+            {/* Action buttons */}
+            <div className="flex items-center gap-2.5">
+              <button className="text-[12px] font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Share</button>
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    if (article.pdf_url) {
+                      window.open(article.pdf_url, "_blank");
+                    } else {
+                      setPdfTooltip(true);
+                      setTimeout(() => setPdfTooltip(false), 2000);
+                    }
+                  }}
+                  className="text-[12px] font-semibold text-white bg-[#0B6E4F] px-4 py-2 rounded-lg hover:bg-[#095C42] transition"
+                >
+                  Download PDF
+                </button>
+                {pdfTooltip && (
+                  <div className="absolute top-full mt-2 right-0 bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-md whitespace-nowrap z-50">
+                    PDF coming soon
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
