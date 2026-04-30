@@ -102,7 +102,7 @@ export default function ServicesPage() {
       <Navbar />
 
       {/* Header — sticky */}
-      <section className="bg-white/95 backdrop-blur-md border-b border-brand-border sticky top-16 z-40 py-5 px-6">
+      <section className="bg-white/95 backdrop-blur-md border-b border-brand-border lg:sticky lg:top-16 z-40 py-5 px-6">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs text-brand-muted mb-2">

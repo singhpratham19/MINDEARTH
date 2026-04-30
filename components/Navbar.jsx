@@ -221,6 +221,7 @@ export default function Navbar() {
 
         {open && (
           <div className="lg:hidden border-t border-brand-border bg-white px-6 py-4">
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search reports..." className="w-full pl-3 pr-3 py-2.5 mb-4 text-sm bg-brand-light border border-brand-border rounded-lg outline-none focus:border-brand-green transition-all placeholder:text-brand-muted" />
             {links.map((l) =>
               l.dropdown ? (
                 <div key={l.label}>

@@ -132,7 +132,7 @@ export default function ReportDetail() {
           </div>
           {/* Pricing */}
           <Fade delay={0.1}>
-            <div className="bg-white rounded-xl border-2 border-emerald-200 p-5 sticky top-20">
+            <div className="bg-white rounded-xl border-2 border-emerald-200 p-5 lg:sticky lg:top-20">
               <p className="text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase mb-4">Pricing & Delivery</p>
               {licenses.map(([tier, price, desc], i) => (
                 <div key={tier} onClick={() => setLicense(i)} className={`p-3 rounded-lg mb-2 border cursor-pointer transition-all ${license === i ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-200"}`}>
@@ -210,15 +210,15 @@ export default function ReportDetail() {
                   <div className="mb-10">
                     <h3 className="font-heading text-lg font-bold text-gray-800 mb-2">Market Trends & Insights</h3>
                     <p className="text-xs font-bold tracking-wider text-gray-400 uppercase mb-4">Drivers Impact Analysis</p>
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      <div className="grid grid-cols-12 gap-0 bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
+                      <div className="grid grid-cols-12 gap-0 bg-gray-50 border-b border-gray-200 px-4 py-2.5 min-w-[480px]">
                         <span className="col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Driver</span>
                         <span className="col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Impact</span>
                         <span className="col-span-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Geography</span>
                         <span className="col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Timeline</span>
                       </div>
                       {report.drivers.map((d, i) => (
-                        <div key={i} className="grid grid-cols-12 gap-0 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors">
+                        <div key={i} className="grid grid-cols-12 gap-0 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors min-w-[480px]">
                           <span className="col-span-5 text-[12px] text-gray-700 pr-3">{d.title}</span>
                           <span className="col-span-2 text-[12px] font-semibold text-emerald-600">{d.impact}</span>
                           <span className="col-span-3 text-[11px] text-gray-500 pr-2">{d.geo}</span>
@@ -236,15 +236,15 @@ export default function ReportDetail() {
                 <Fade delay={0.25}>
                   <div className="mb-10">
                     <p className="text-xs font-bold tracking-wider text-gray-400 uppercase mb-4">Restraints Impact Analysis</p>
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      <div className="grid grid-cols-12 gap-0 bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">
+                      <div className="grid grid-cols-12 gap-0 bg-gray-50 border-b border-gray-200 px-4 py-2.5 min-w-[480px]">
                         <span className="col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Restraint</span>
                         <span className="col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Impact</span>
                         <span className="col-span-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Geography</span>
                         <span className="col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Timeline</span>
                       </div>
                       {report.restraints.map((r, i) => (
-                        <div key={i} className="grid grid-cols-12 gap-0 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors">
+                        <div key={i} className="grid grid-cols-12 gap-0 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors min-w-[480px]">
                           <span className="col-span-5 text-[12px] text-gray-700 pr-3">{r.title}</span>
                           <span className="col-span-2 text-[12px] font-semibold text-red-500">{r.impact}</span>
                           <span className="col-span-3 text-[11px] text-gray-500 pr-2">{r.geo}</span>

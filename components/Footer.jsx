@@ -4,8 +4,8 @@ export default function Footer() {
   return (
     <footer className="bg-brand-light border-t border-brand-border">
       <div className="max-w-container mx-auto px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
-          <div className="col-span-2 md:col-span-1 lg:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 relative flex items-center justify-center">
                 <svg className="w-9 h-9" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,8 +44,8 @@ export default function Footer() {
         </div>
         <div className="border-t border-brand-border pt-6 flex flex-wrap justify-between items-center gap-4">
           <span className="text-xs text-brand-muted">© 2026 MindEarth Consultancy. All rights reserved.</span>
-          <div className="flex items-center gap-6 text-xs text-brand-muted">
-            <span>Pune, India | Global Operations</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-brand-muted">
+            <span className="hidden sm:inline">Pune, India | Global Operations</span>
             <span className="hover:text-brand-body cursor-pointer transition-colors">Privacy</span>
             <span className="hover:text-brand-body cursor-pointer transition-colors">Terms</span>
             <a href="#" className="w-7 h-7 rounded-lg bg-brand-blue flex items-center justify-center hover:bg-brand-green transition-colors duration-200">

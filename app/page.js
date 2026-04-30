@@ -86,12 +86,12 @@ export default function Home() {
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
         <img src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=1800&q=80" alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0A2540]/95 via-[#0A2540]/90 to-[#0A2540]/75" />
-        <div className="relative z-10 max-w-container mx-auto px-6 py-24 w-full">
+        <div className="relative z-10 max-w-container mx-auto px-6 py-16 sm:py-24 w-full">
           <div className="max-w-2xl">
             <Fade>
               <div className="inline-flex items-center gap-2.5 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 mb-8">
                 <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-                <span className="text-xs font-medium text-white/90 tracking-wide">700+ datasets | 120+ industries | 400+ ESG studies | proprietary insights</span>
+                <span className="text-[10px] sm:text-xs font-medium text-white/90 tracking-wide"><span className="hidden sm:inline">700+ datasets | 120+ industries | </span>400+ ESG studies | proprietary insights</span>
               </div>
             </Fade>
             <Fade delay={0.06}>
@@ -110,7 +110,7 @@ export default function Home() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" strokeWidth="2"/></svg>
                   </div>
                   <input ref={inputRef} value={query} onChange={e => { setQuery(e.target.value); setShowDropdown(true); setHighlightIdx(-1); }} onFocus={() => { setFocused(true); if (query.trim()) setShowDropdown(true); }} onBlur={() => setFocused(false)} onKeyDown={handleKeyDown} placeholder="Search ESG reports by industry, topic, or region..." className="flex-1 py-4 px-3 text-[15px] text-brand-dark bg-transparent outline-none placeholder:text-brand-muted" />
-                  <button onClick={handleSearch} className="bg-[#0B6E4F] text-white text-sm font-semibold px-6 m-2 rounded-lg hover:bg-[#095C42] transition-colors duration-200 whitespace-nowrap">Search Reports</button>
+                  <button onClick={handleSearch} className="bg-[#0B6E4F] text-white text-xs sm:text-sm font-semibold px-3 sm:px-6 m-2 rounded-lg hover:bg-[#095C42] transition-colors duration-200 whitespace-nowrap"><span className="hidden sm:inline">Search </span>Reports</button>
                 </div>
 
                 {/* Live autocomplete dropdown */}
@@ -160,14 +160,14 @@ export default function Home() {
               </div>
             </Fade>
             <Fade delay={0.28}>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                 <Link href="/reports" className="bg-[#0B6E4F] text-white font-semibold text-sm px-7 py-3.5 rounded-lg hover:bg-[#095C42] transition-colors duration-200 shadow-sm">Browse Reports</Link>
                 <Link href="/contact" className="bg-white/20 backdrop-blur-sm text-white font-semibold text-sm px-7 py-3.5 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-200">Subscribe for Full Access</Link>
               </div>
             </Fade>
           </div>
           <Fade delay={0.34}>
-            <div className="flex gap-12 mt-16 pt-8 max-w-2xl">
+            <div className="grid grid-cols-2 sm:flex gap-6 sm:gap-12 mt-12 sm:mt-16 pt-8 max-w-2xl">
               {[["300+","ESG Reports"],["25+","Industries"],["40+","Countries"],["850+","Clients"]].map(([n,l])=>(
                 <div key={l} className="text-left">
                   <div className="font-heading text-2xl font-bold text-white">{n}</div>

@@ -80,7 +80,7 @@ export default function BRSRPage() {
               </div>
             </Fade>
             <Fade delay={0.24}>
-              <div className="flex gap-12 pt-8 border-t border-white/10">
+              <div className="grid grid-cols-2 sm:flex sm:gap-12 gap-6 pt-8 border-t border-white/10">
                 {[["140+", "BRSR Indicators"], ["9", "NGRBC Principles"], ["6", "Phase Process"], ["100%", "Filing Success"]].map(([n, l]) => (
                   <div key={l}>
                     <div className="font-heading text-2xl font-bold text-white">{n}</div>

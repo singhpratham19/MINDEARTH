@@ -164,7 +164,7 @@ export default function InsightArticle() {
               <div className="w-12 h-12 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-sm font-bold tracking-wide shrink-0">SG</div>
               <div>
                 <p className="text-[17px] font-semibold text-[#0A2540] leading-tight">{article.author}</p>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center flex-wrap gap-2 mt-1">
                   <span className="text-[13px] text-gray-500">{article.date}</span>
                   <span className="w-1 h-1 rounded-full bg-gray-300" />
                   <span className="text-[13px] text-gray-500">{article.read} read</span>
@@ -208,6 +208,20 @@ export default function InsightArticle() {
 
             {/* Main Content */}
             <div className="min-w-0">
+              {/* Key Takeaways — mobile only (desktop shows in sidebar) */}
+              {article.keyTakeaways?.length > 0 && (
+                <div className="lg:hidden bg-[#F8FAFC] rounded-xl p-5 border border-gray-100 mb-10">
+                  <h3 className="font-heading text-[11px] font-bold tracking-[0.2em] text-[#0B6E4F] uppercase mb-4">Key Takeaways</h3>
+                  <ul className="space-y-3">
+                    {article.keyTakeaways.map((t, i) => (
+                      <li key={i} className="flex gap-3 text-[13px] text-gray-700 leading-relaxed">
+                        <span className="w-5 h-5 rounded-full bg-[#0B6E4F] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{i + 1}</span>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               {article.sections.map((s, i) => (
                 <Fade key={i} delay={i * 0.04}>
                   <section className={`${i > 0 ? "mt-14" : ""}`}>

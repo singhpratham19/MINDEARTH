@@ -119,7 +119,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex gap-3 mt-6">
                   <button onClick={() => setStep(1)} className="border border-gray-200 text-gray-600 font-medium text-sm px-6 py-3 rounded-lg hover:border-gray-300 transition">← Back</button>
-                  <button onClick={() => setStep(3)} className="bg-emerald-500 text-white font-semibold text-sm px-8 py-3 rounded-lg hover:bg-emerald-600 transition">Continue to Payment →</button>
+                  <button onClick={() => setStep(3)} className="flex-1 bg-emerald-500 text-white font-semibold text-sm px-4 py-3 rounded-lg hover:bg-emerald-600 transition">Continue to Payment →</button>
                 </div>
               </div>
             )}
@@ -131,8 +131,8 @@ export default function CheckoutPage() {
 
                 {/* Method tabs */}
                 <div className="flex gap-2 mb-6">
-                  {[["stripe", "💳 International (Stripe)"], ["razorpay", "🇮🇳 India (Razorpay)"]].map(([k, l]) => (
-                    <button key={k} onClick={() => setPayMethod(k)} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition ${payMethod === k ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>{l}</button>
+                  {[["stripe", "💳 Card / International"], ["razorpay", "🇮🇳 UPI / India"]].map(([k, l]) => (
+                    <button key={k} onClick={() => setPayMethod(k)} className={`flex-1 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold border-2 transition ${payMethod === k ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>{l}</button>
                   ))}
                 </div>
 
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
                         <div className="w-6 h-6 bg-white rounded flex items-center justify-center"><span className="text-blue-600 font-bold text-xs">R</span></div>
                         <span className="text-sm font-bold">Razorpay</span>
                       </div>
-                      <div className="grid grid-cols-4 gap-2 mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                         {["UPI", "Cards", "Netbanking", "Wallets"].map((m, i) => (
                           <div key={m} className={`text-center py-2 rounded-lg text-xs font-semibold cursor-pointer transition ${i === 0 ? "bg-white text-blue-600" : "bg-white/20 text-white hover:bg-white/30"}`}>{m}</div>
                         ))}
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
 
           {/* Right — Order Summary (2 cols) */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl border border-gray-200 p-5 sticky top-20">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 lg:sticky lg:top-20">
               <h3 className="font-heading text-base font-bold text-brand-dark mb-4">Order Summary</h3>
               <div className="flex gap-3 mb-4">
                 <img src={report.img} alt={report.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
