@@ -20,11 +20,13 @@ export async function POST(req) {
 
     if (process.env.RESEND_API_KEY) {
       try {
+        console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
         const { Resend } = await import("resend");
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         // Admin notification
-        await resend.emails.send({
+        console.log("Sending admin notification to:", process.env.NOTIFICATION_EMAIL);
+        const adminRes = await resend.emails.send({
           from: "MindEarth <noreply@mindearthconsultancy.com>",
           to: process.env.NOTIFICATION_EMAIL || "hello@mindearthconsultancy.com",
           reply_to: email,
@@ -32,6 +34,7 @@ export async function POST(req) {
           text: `New contact form submission\n\nName: ${name}\nEmail: ${email}\nCompany: ${company || "N/A"}\nPhone: ${phone || "N/A"}\nSubject: ${subject || "General"}\n\nMessage:\n${message}`,
           html: `<p>New contact form submission</p><table cellpadding="4"><tr><td><strong>Name</strong></td><td>${name}</td></tr><tr><td><strong>Email</strong></td><td>${email}</td></tr><tr><td><strong>Company</strong></td><td>${company || "N/A"}</td></tr><tr><td><strong>Phone</strong></td><td>${phone || "N/A"}</td></tr><tr><td><strong>Subject</strong></td><td>${subject || "General"}</td></tr></table><p><strong>Message:</strong><br>${message}</p>`,
         });
+        console.log("Admin email result:", adminRes);
 
         // Auto-reply to user
         const autoReplyRes = await resend.emails.send({
