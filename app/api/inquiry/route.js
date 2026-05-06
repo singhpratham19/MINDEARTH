@@ -25,10 +25,12 @@ export async function POST(req) {
         const { Resend } = await import("resend");
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: "MindEarth <onboarding@resend.dev>",
-          to: process.env.NOTIFICATION_EMAIL || "hello@mindearth.co",
-          subject: `Inquiry: ${inquiryType || "General"} — ${reportTitle || "No report"} — ${name}`,
-          html: `<h2>New Report Inquiry</h2><p><strong>Type:</strong> ${inquiryType || "General"}</p><p><strong>Report:</strong> ${reportTitle || "N/A"}</p><p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Company:</strong> ${company || "N/A"}</p><p><strong>Phone:</strong> ${phone || "N/A"}</p><p><strong>Message:</strong> ${message || "N/A"}</p>`,
+          from: "MindEarth <noreply@mindearthconsultancy.com>",
+          to: process.env.NOTIFICATION_EMAIL || "hello@mindearthconsultancy.com",
+          reply_to: email,
+          subject: `Report inquiry: ${name} — ${reportTitle || "General"}`,
+          text: `New report inquiry\n\nType: ${inquiryType || "General"}\nReport: ${reportTitle || "N/A"}\nName: ${name}\nEmail: ${email}\nCompany: ${company || "N/A"}\nPhone: ${phone || "N/A"}\nMessage: ${message || "N/A"}`,
+          html: `<p>New report inquiry</p><table cellpadding="4"><tr><td><strong>Type</strong></td><td>${inquiryType || "General"}</td></tr><tr><td><strong>Report</strong></td><td>${reportTitle || "N/A"}</td></tr><tr><td><strong>Name</strong></td><td>${name}</td></tr><tr><td><strong>Email</strong></td><td>${email}</td></tr><tr><td><strong>Company</strong></td><td>${company || "N/A"}</td></tr><tr><td><strong>Phone</strong></td><td>${phone || "N/A"}</td></tr><tr><td><strong>Message</strong></td><td>${message || "N/A"}</td></tr></table>`,
         });
       } catch (emailErr) {
         console.error("Email error:", emailErr);
