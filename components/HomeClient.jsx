@@ -15,10 +15,10 @@ const press = [
 ];
 
 const whyCards = [
-  { img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=80", icon: "✓", title: "Proven ESG Methodology", desc: "Proprietary L1 scoping + L2 segmentation framework with data triangulated from official government and intergovernmental sources. Every number verified." },
-  { img: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&q=80", icon: "🌐", title: "Global Industry Coverage", desc: "25+ industry verticals across 40+ countries with deep on-the-ground expertise in South Asia, Middle East, SE Asia, and Sub-Saharan Africa." },
-  { img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80", icon: "📊", title: "Custom Analytics Solutions", desc: "Bespoke market research, Excel data models, and proprietary ESG scoring tailored to your specific investment thesis or strategic question." },
-  { img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80", icon: "👥", title: "Trusted by Leaders", desc: "850+ enterprise clients including Fortune 500 corporations, sovereign wealth funds, development banks, and government regulatory bodies." },
+  { img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80", icon: "📋", title: "TEV Reports", desc: "Technical Economic Viability assessments for renewable energy, infrastructure, and industrial projects — prepared to lender and DFI appraisal standards, with integrated ESG and environmental compliance parameters." },
+  { img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80", icon: "📁", title: "DPR Reports", desc: "Detailed Project Reports for developers, state agencies, and financial institutions. ESG and sustainability components built in as standard — ensuring projects are bankable and compliant." },
+  { img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80", icon: "💼", title: "Project Finance Consultancy", desc: "Structured finance advisory from concept through financial close — covering green finance instruments, lender documentation, and ESG covenant design for clean energy and infrastructure projects." },
+  { img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80", icon: "📊", title: "Market Research & ESG Advisory", desc: "Sector-specific market studies and end-to-end sustainability consultancy — BRSR compliance, carbon accounting, ESG due diligence, and strategic advisory for corporates and institutions." },
 ];
 
 export default function HomeClient() {
