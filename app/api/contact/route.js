@@ -34,7 +34,7 @@ export async function POST(req) {
         });
 
         // Auto-reply to user
-        await resend.emails.send({
+        const autoReplyRes = await resend.emails.send({
           from: "MindEarth <noreply@mindearthconsultancy.com>",
           to: email,
           reply_to: "hello@mindearthconsultancy.com",
@@ -42,8 +42,9 @@ export async function POST(req) {
           text: `Hi ${name},\n\nThank you for reaching out to MindEarth Consultancy. We have received your message and will get back to you within 24 hours.\n\nBest regards,\nMindEarth Consultancy Team`,
           html: `<p>Hi ${name},</p><p>Thank you for reaching out to MindEarth Consultancy. We have received your message and will get back to you within 24 hours.</p><p>Best regards,<br>MindEarth Consultancy Team</p>`,
         });
+        console.log("Auto-reply sent:", autoReplyRes);
       } catch (emailErr) {
-        console.error("Email error:", emailErr);
+        console.error("Email error — contact route:", emailErr.message || emailErr);
       }
     }
 
