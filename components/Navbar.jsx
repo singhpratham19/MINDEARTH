@@ -109,7 +109,7 @@ export default function Navbar() {
       </div>
 
       {/* Main nav */}
-      <nav className="sticky top-0 z-50 bg-white/98 backdrop-blur-md border-b border-brand-border">
+      <nav className="sticky top-0 z-50 bg-white border-b border-brand-border shadow-sm">
         <div className="max-w-container mx-auto px-6 h-16 flex items-center justify-between gap-6">
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 relative flex items-center justify-center">
