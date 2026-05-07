@@ -18,6 +18,7 @@ const services = [
     ],
     cta: "/contact",
     ctaLabel: "Request a TEV Report",
+    learnMore: "/services/tev-reports",
   },
   {
     tag: "PROJECT DOCUMENTATION", title: "DPR Reports",
@@ -33,6 +34,7 @@ const services = [
     ],
     cta: "/contact",
     ctaLabel: "Request a DPR",
+    learnMore: "/services/dpr-reports",
   },
   {
     tag: "FINANCE ADVISORY", title: "Project Finance Consultancy",
@@ -48,6 +50,7 @@ const services = [
     ],
     cta: "/contact",
     ctaLabel: "Get a Proposal",
+    learnMore: "/services/project-finance",
   },
   {
     tag: "MARKET INTELLIGENCE", title: "Market Research Reports",
@@ -63,6 +66,7 @@ const services = [
     ],
     cta: "/contact",
     ctaLabel: "Request a Report",
+    learnMore: "/services/market-research",
   },
   {
     tag: "STRATEGIC ADVISORY", title: "ESG & Sustainability Consultancy",
@@ -78,6 +82,7 @@ const services = [
     ],
     cta: "/contact",
     ctaLabel: "Get a Proposal",
+    learnMore: "/services/esg-consultancy",
   },
 ];
 
@@ -122,7 +127,7 @@ export default function ServicesPage() {
           </Fade>
           <Fade delay={0.1}>
             <div className="rounded-xl overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&q=80" alt="Sustainable energy landscape" className="w-full h-[300px] object-cover rounded-xl" />
+              <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80" alt="Sustainable energy landscape" className="w-full h-[300px] object-cover rounded-xl" />
             </div>
           </Fade>
         </div>
@@ -147,7 +152,7 @@ export default function ServicesPage() {
                     <Link href={svc.cta} className="bg-[#0B6E4F] text-white text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-[#095C42] transition-colors duration-200">
                       {svc.ctaLabel}
                     </Link>
-                    <Link href={svc.cta} className="border-2 border-[#0A2540] text-[#0A2540] text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-[#0A2540] hover:text-white transition-all duration-200">
+                    <Link href={svc.learnMore} className="border-2 border-[#0A2540] text-[#0A2540] text-sm font-semibold px-6 py-2.5 rounded-lg hover:bg-[#0A2540] hover:text-white transition-all duration-200">
                       Learn More →
                     </Link>
                   </div>

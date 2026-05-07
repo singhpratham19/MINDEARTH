@@ -7,9 +7,12 @@ const staticRoutes = [
   { url: "/reports", priority: 0.9, changeFrequency: "daily" },
   { url: "/insights", priority: 0.8, changeFrequency: "weekly" },
   { url: "/services", priority: 0.8, changeFrequency: "monthly" },
-  { url: "/services/brsr", priority: 0.7, changeFrequency: "monthly" },
-  { url: "/about", priority: 0.6, changeFrequency: "monthly" },
-  { url: "/contact", priority: 0.6, changeFrequency: "monthly" },
+  { url: "/services/brsr", priority: 0.8, changeFrequency: "monthly" },
+  { url: "/about", priority: 0.7, changeFrequency: "monthly" },
+  { url: "/contact", priority: 0.7, changeFrequency: "monthly" },
+  { url: "/ghg-emissions-calculation", priority: 0.8, changeFrequency: "monthly" },
+  { url: "/scope-1-2-3-explained", priority: 0.8, changeFrequency: "monthly" },
+  { url: "/esg-reporting-india", priority: 0.8, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap() {
