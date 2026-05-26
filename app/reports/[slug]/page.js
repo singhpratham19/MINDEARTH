@@ -23,7 +23,6 @@ export default function ReportDetail() {
       if (data && data.length) setAllReports(data);
     }).catch(() => {});
   }, [slug]);
-  const [license, setLicense] = useState(0);
   const [expandedChapters, setExpandedChapters] = useState({});
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
@@ -98,7 +97,6 @@ export default function ReportDetail() {
   const baseVal = parseFloat(rpt.size.replace(/[$BTM,]/g, "")) || 50;
   const cagrNum = parseFloat(rpt.cagr) / 100 || 0.1;
   const chartData = Array.from({ length: 7 }, (_, i) => ({ year: String(2025 + i) + (i >= 5 ? "F" : ""), value: Math.round(baseVal * Math.pow(1 + cagrNum, i) * 10) / 10 }));
-  const licenses = [["Single User", report.price, "1 user"], ["Multi User", report.price + 1000, "Up to 5 users"], ["Enterprise", report.price + 2500, "Unlimited + Excel"]];
   const related = allReports.filter(r => r.slug !== report.slug).slice(0, 2);
   const baseTabs = [{ k: "overview", l: "Overview" }, { k: "toc", l: "Table of Contents" }, { k: "segments", l: "Segmentation" }, { k: "companies", l: "Key Companies" }];
   const tabs = report.esgContent ? [baseTabs[0], { k: "esg", l: "ESG & GRI Analysis" }, ...baseTabs.slice(1)] : baseTabs;
@@ -130,20 +128,17 @@ export default function ReportDetail() {
             </Fade>
             <Fade delay={0.1}><div className="rounded-xl overflow-hidden border border-gray-100"><img src={report.img} alt={report.title} className="w-full h-48 sm:h-56 object-cover" /></div></Fade>
           </div>
-          {/* Pricing */}
+          {/* Get this Report */}
           <Fade delay={0.1}>
-            <div className="bg-white rounded-xl border-2 border-emerald-200 p-5 lg:sticky lg:top-20">
-              <p className="text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase mb-4">Pricing & Delivery</p>
-              {licenses.map(([tier, price, desc], i) => (
-                <div key={tier} onClick={() => setLicense(i)} className={`p-3 rounded-lg mb-2 border cursor-pointer transition-all ${license === i ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-200"}`}>
-                  <div className="flex justify-between items-center"><div><p className="text-xs font-semibold text-gray-800">{tier}</p><p className="text-[10px] text-gray-400">{desc}</p></div><p className="font-heading text-lg font-bold text-gray-900">${price.toLocaleString()}</p></div>
-                </div>
-              ))}
-              <Link href={`/checkout/${report.slug}`} className="block w-full bg-emerald-500 text-white font-semibold text-sm py-3 rounded-lg mt-3 hover:bg-emerald-600 transition text-center">Buy Now</Link>
-              <button onClick={() => { setShowSampleModal(true); setFormStatus({ loading: false, msg: "", success: false }); }} className="w-full border border-emerald-500 text-emerald-600 font-semibold text-sm py-3 rounded-lg mt-2 hover:bg-emerald-50 transition">Download Free Sample</button>
-              <div className="border-t border-gray-100 mt-4 pt-3">
-                <p className="text-[10px] text-gray-400 mb-2">Includes:</p>
-                {[`${report.pages} page PDF`, "Excel data model", "6-year forecasts", "Company profiles", "30-day analyst support"].map(f => <div key={f} className="flex items-center gap-2 mb-1.5"><svg className="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg><span className="text-[11px] text-gray-600">{f}</span></div>)}
+            <div className="bg-white rounded-xl border-2 border-emerald-200 p-6 lg:sticky lg:top-20">
+              <p className="text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase mb-3">Get this Report</p>
+              <h3 className="font-heading text-lg font-bold text-gray-900 mb-2">Speak with our research team</h3>
+              <p className="text-[13px] text-gray-500 leading-relaxed mb-5">Request the full report, a tailored extract, or a briefing call. Our analysts respond within one business day.</p>
+              <Link href="/contact" className="block w-full bg-[#0B6E4F] text-white font-semibold text-sm py-3 rounded-lg hover:bg-[#095C42] transition text-center">Buy Report</Link>
+              <button onClick={() => { setShowSampleModal(true); setFormStatus({ loading: false, msg: "", success: false }); }} className="w-full border border-[#0B6E4F] text-[#0B6E4F] font-semibold text-sm py-3 rounded-lg mt-2 hover:bg-emerald-50 transition">Download Free Sample</button>
+              <div className="border-t border-gray-100 mt-5 pt-4">
+                <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase mb-3">What you receive</p>
+                {[`${report.pages || 250} page PDF`, "Excel data model", "6-year forecasts", "Company profiles", "30-day analyst support"].map(f => <div key={f} className="flex items-center gap-2 mb-1.5"><svg className="w-3 h-3 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg><span className="text-[11px] text-gray-600">{f}</span></div>)}
               </div>
             </div>
           </Fade>
@@ -344,11 +339,11 @@ export default function ReportDetail() {
                     {report.analysisContent && (
                       <div className="grid md:grid-cols-2 gap-5 mt-5">
                         <div className="bg-white rounded-xl border border-gray-200 p-5">
-                          <h4 className="text-sm font-bold text-gray-800 mb-1">North America — 43.2% Share, 5.1% CAGR</h4>
+                          <h4 className="text-sm font-bold text-gray-800 mb-1">North America · 43.2% Share, 5.1% CAGR</h4>
                           <p className="text-[12px] text-gray-500 leading-relaxed">{report.analysisContent.northAmericaAnalysis}</p>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-200 p-5">
-                          <h4 className="text-sm font-bold text-gray-800 mb-1">Middle East & Africa — Fastest Growing at 7.9% CAGR</h4>
+                          <h4 className="text-sm font-bold text-gray-800 mb-1">Middle East & Africa · Fastest Growing at 7.9% CAGR</h4>
                           <p className="text-[12px] text-gray-500 leading-relaxed">{report.analysisContent.meaAnalysis}</p>
                         </div>
                       </div>
@@ -769,7 +764,7 @@ export default function ReportDetail() {
       {/* Related */}
       <section className="bg-white py-10 px-5 border-t border-gray-100">
         <div className="max-w-7xl mx-auto"><Fade><p className="text-xs font-bold tracking-[0.2em] text-emerald-600 uppercase mb-2">Related Reports</p><h2 className="font-heading text-xl font-bold text-gray-800 mb-5">You might also like</h2></Fade>
-          <div className="grid md:grid-cols-2 gap-4">{related.map((r,i) => <Fade key={r.slug} delay={i*0.06}><Link href={`/reports/${r.slug}`} className="block bg-brand-light rounded-xl border border-gray-200 p-5 hover:border-emerald-300 transition group"><div className="flex gap-4"><img src={r.img} alt={r.title} className="w-20 h-20 rounded-lg object-cover shrink-0"/><div><span className="text-[10px] text-gray-400">{r.code}</span><h3 className="font-heading text-sm font-bold text-gray-800 group-hover:text-emerald-600 mt-0.5">{r.title}</h3><div className="flex gap-3 mt-2 text-[11px] text-gray-500"><span>CAGR: <strong className="text-emerald-600">{r.cagr}</strong></span><span>${r.price.toLocaleString()}</span></div></div></div></Link></Fade>)}</div>
+          <div className="grid md:grid-cols-2 gap-4">{related.map((r,i) => <Fade key={r.slug} delay={i*0.06}><Link href={`/reports/${r.slug}`} className="block bg-brand-light rounded-xl border border-gray-200 p-5 hover:border-emerald-300 transition group"><div className="flex gap-4"><img src={r.img} alt={r.title} className="w-20 h-20 rounded-lg object-cover shrink-0"/><div><span className="text-[10px] text-gray-400">{r.code}</span><h3 className="font-heading text-sm font-bold text-gray-800 group-hover:text-emerald-600 mt-0.5">{r.title}</h3><div className="flex gap-3 mt-2 text-[11px] text-gray-500"><span>CAGR: <strong className="text-emerald-600">{r.cagr}</strong></span><span>{r.period || ""}</span></div></div></div></Link></Fade>)}</div>
         </div>
       </section>
       <Footer />

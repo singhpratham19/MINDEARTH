@@ -5,6 +5,29 @@ import { parseExcelToReport, downloadTemplate, parseExcelToInsight, downloadInsi
 const API = "/api/admin/reports/content";
 const INSIGHTS_API = "/api/admin/insights";
 
+/* ── small helpers ── */
+function Badge({ children, color = "gray" }) {
+  const map = {
+    green:  "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    blue:   "bg-sky-50 text-sky-700 ring-1 ring-sky-200",
+    amber:  "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    red:    "bg-red-50 text-red-600 ring-1 ring-red-200",
+    gray:   "bg-gray-100 text-gray-500 ring-1 ring-gray-200",
+    navy:   "bg-[#0A2540]/10 text-[#0A2540] ring-1 ring-[#0A2540]/20",
+  };
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${map[color]}`}>{children}</span>;
+}
+
+function SideIcon({ type }) {
+  const icons = {
+    reports: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />,
+    insights: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />,
+    upload:  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />,
+    logout:  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />,
+  };
+  return <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icons[type]}</svg>;
+}
+
 export default function ReportsCMS() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -13,10 +36,11 @@ export default function ReportsCMS() {
   const [msg, setMsg] = useState({ text: "", ok: true });
   const [preview, setPreview] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [dragOverInsight, setDragOverInsight] = useState(false);
   const [previewTab, setPreviewTab] = useState("overview");
   const [dbMissing, setDbMissing] = useState(false);
   const [setupSql, setSetupSql] = useState("");
-  const [cmsTab, setCmsTab] = useState("reports"); // "reports" | "insights"
+  const [cmsTab, setCmsTab] = useState("insights");
   const [insights, setInsights] = useState([]);
   const [insightPreview, setInsightPreview] = useState(null);
   const fileRef = useRef();
@@ -32,978 +56,560 @@ export default function ReportsCMS() {
       if (res.ok) {
         const json = await res.json();
         setReports(json.reports || []);
-        if (json.warning && json.reports?.length === 0) {
-          setDbMissing(true);
-        } else {
-          setDbMissing(false);
-        }
-      } else {
-        setReports([]);
-      }
+        setDbMissing(json.warning && json.reports?.length === 0);
+      } else setReports([]);
     } catch { setReports([]); }
   }, [password]);
 
   const fetchInsights = useCallback(async () => {
     try {
       const res = await fetch(INSIGHTS_API, { headers: { Authorization: `Bearer ${password}` } });
-      if (res.ok) {
-        const json = await res.json();
-        setInsights(json.insights || []);
-      } else {
-        setInsights([]);
-      }
+      if (res.ok) { const json = await res.json(); setInsights(json.insights || []); }
+      else setInsights([]);
     } catch { setInsights([]); }
   }, [password]);
 
   useEffect(() => { if (authed) { fetchReports(); fetchInsights(); } }, [authed, fetchReports, fetchInsights]);
+  useEffect(() => { const saved = sessionStorage.getItem("admin_pw"); if (saved) { setPassword(saved); setAuthed(true); } }, []);
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem("admin_pw");
-    if (saved) { setPassword(saved); setAuthed(true); }
-  }, []);
+  const handleLogin = (e) => { e.preventDefault(); sessionStorage.setItem("admin_pw", password); setAuthed(true); };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    sessionStorage.setItem("admin_pw", password);
-    setAuthed(true);
-  };
-
-  // Parse uploaded Excel
   const handleFile = async (file) => {
     if (!file) return;
-    setLoading(true);
-    setMsg({ text: "", ok: true });
+    setLoading(true); setMsg({ text: "", ok: true });
     try {
       const buffer = await file.arrayBuffer();
       const report = parseExcelToReport(new Uint8Array(buffer));
       if (!report.title) throw new Error("No title found. Make sure the 'Basic Info' sheet has a 'Title' row.");
-      setPreview(report);
-      setPreviewTab("overview");
-      setMsg({ text: `Parsed "${report.title}" — review the preview below and click Publish.`, ok: true });
-    } catch (err) {
-      setMsg({ text: `Error parsing Excel: ${err.message}`, ok: false });
-      setPreview(null);
-    }
+      setPreview(report); setPreviewTab("overview");
+      setMsg({ text: `Parsed "${report.title}" — review and publish below.`, ok: true });
+    } catch (err) { setMsg({ text: `Error: ${err.message}`, ok: false }); setPreview(null); }
     setLoading(false);
   };
 
-  const onFileChange = (e) => handleFile(e.target.files?.[0]);
-  const onDrop = (e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files?.[0]); };
-
-  // Image upload
   const handleImageUpload = async (file) => {
-    if (!file) return;
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setMsg({ text: "Please upload an image file (JPG, PNG, WebP)", ok: false });
-      return;
-    }
+    if (!file || !file.type.startsWith("image/")) { setMsg({ text: "Please upload an image file", ok: false }); return; }
     setLoading(true);
     try {
-      // Try Supabase upload first
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/admin/upload-image", {
-        method: "POST",
-        headers: authHeader,
-        body: formData,
-      });
+      const formData = new FormData(); formData.append("file", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", headers: authHeader, body: formData });
       const json = await res.json();
-      if (res.ok && json.url) {
-        setPreview(prev => ({ ...prev, img: json.url }));
-        setMsg({ text: "Image uploaded successfully!", ok: true });
-      } else {
-        // Fallback: use local preview URL
-        const localUrl = URL.createObjectURL(file);
-        setPreview(prev => ({ ...prev, img: localUrl, _localImage: true }));
-        setMsg({ text: json.error ? `${json.error} — Using local preview instead. Add image URL in Excel or set up Supabase Storage.` : "Using local image preview.", ok: true });
-      }
-    } catch {
-      // Fallback: use local preview URL
-      const localUrl = URL.createObjectURL(file);
-      setPreview(prev => ({ ...prev, img: localUrl, _localImage: true }));
-      setMsg({ text: "Could not upload to server — using local preview. Add an image URL in the Excel 'Basic Info' sheet.", ok: true });
-    }
+      if (res.ok && json.url) { setPreview(prev => ({ ...prev, img: json.url })); setMsg({ text: "Image uploaded!", ok: true }); }
+      else { const localUrl = URL.createObjectURL(file); setPreview(prev => ({ ...prev, img: localUrl, _localImage: true })); }
+    } catch { const localUrl = URL.createObjectURL(file); setPreview(prev => ({ ...prev, img: localUrl, _localImage: true })); }
     setLoading(false);
   };
 
-  // Publish
   const publish = async () => {
     if (!preview) return;
-    setLoading(true);
-    setMsg({ text: "", ok: true });
+    setLoading(true); setMsg({ text: "", ok: true });
     try {
-      if (preview._localImage && !preview.img?.startsWith("http")) {
-        setMsg({ text: "Please add an image URL in your Excel file or upload to Supabase Storage before publishing.", ok: false });
-        setLoading(false);
-        return;
-      }
+      if (preview._localImage && !preview.img?.startsWith("http")) { setMsg({ text: "Add an image URL in Excel before publishing.", ok: false }); setLoading(false); return; }
       const existing = reports.find(r => r.slug === preview.slug);
-      const method = existing ? "PUT" : "POST";
       const { _localImage, ...body } = { ...preview, published: true };
-      const res = await fetch(API, {
-        method,
-        headers: { ...authHeader, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const res = await fetch(API, { method: existing ? "PUT" : "POST", headers: { ...authHeader, "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to save");
-      setMsg({ text: `Report "${preview.title}" ${existing ? "updated" : "created"} successfully!`, ok: true });
-      setPreview(null);
-      fetchReports();
-    } catch (err) {
-      setMsg({ text: err.message, ok: false });
-    }
+      setMsg({ text: `"${preview.title}" ${existing ? "updated" : "published"}!`, ok: true });
+      setPreview(null); fetchReports();
+    } catch (err) { setMsg({ text: err.message, ok: false }); }
     setLoading(false);
   };
 
   const deleteReport = async (slug) => {
-    if (!confirm(`Delete "${slug}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${slug}"?`)) return;
     try {
       const res = await fetch(`${API}?slug=${slug}`, { method: "DELETE", headers: authHeader });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
-      setMsg({ text: `Deleted "${slug}"`, ok: true });
-      fetchReports();
+      setMsg({ text: `Deleted "${slug}"`, ok: true }); fetchReports();
     } catch (err) { setMsg({ text: err.message, ok: false }); }
   };
 
-  const setupDatabase = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/setup-db", { method: "POST", headers: authHeader });
-      const json = await res.json();
-      if (json.success) {
-        setMsg({ text: "Database is already set up!", ok: true });
-        setDbMissing(false);
-        fetchReports();
-      } else if (json.needsManualSetup) {
-        setSetupSql(json.sql);
-      } else {
-        setMsg({ text: json.error || "Setup failed", ok: false });
-      }
-    } catch (err) { setMsg({ text: err.message, ok: false }); }
-    setLoading(false);
-  };
-
-  const seedReports = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/seed", { method: "POST", headers: authHeader });
-      const json = await res.json();
-      const errMsg = json.error || "";
-      if (errMsg.includes("schema cache") || errMsg.includes("not found")) {
-        setMsg({ text: "Database table doesn't exist yet. Go to your Supabase Dashboard → SQL Editor and run the migration from supabase-reports-table.sql first.", ok: false });
-      } else {
-        setMsg({ text: json.message || "Seeded!", ok: !json.error });
-      }
-      fetchReports();
-    } catch (err) { setMsg({ text: err.message, ok: false }); }
-    setLoading(false);
-  };
-
-  // ── INSIGHT HANDLERS ──
   const handleInsightFile = async (file) => {
     if (!file) return;
-    setLoading(true);
-    setMsg({ text: "", ok: true });
+    setLoading(true); setMsg({ text: "", ok: true });
     try {
       const buffer = await file.arrayBuffer();
       const insight = parseExcelToInsight(new Uint8Array(buffer));
-      if (!insight.title) throw new Error("No title found. Make sure the 'Basic Info' sheet has a 'Title' row.");
+      if (!insight.title) throw new Error("No title found.");
       setInsightPreview(insight);
-      setMsg({ text: `Parsed "${insight.title}" — review below and click Publish.`, ok: true });
-    } catch (err) {
-      setMsg({ text: `Error parsing Excel: ${err.message}`, ok: false });
-      setInsightPreview(null);
-    }
+      setMsg({ text: `Parsed "${insight.title}" — review and publish below.`, ok: true });
+    } catch (err) { setMsg({ text: `Error: ${err.message}`, ok: false }); setInsightPreview(null); }
     setLoading(false);
   };
 
   const publishInsight = async () => {
     if (!insightPreview) return;
-    setLoading(true);
-    setMsg({ text: "", ok: true });
+    setLoading(true); setMsg({ text: "", ok: true });
     try {
       const existing = insights.find(i => i.slug === insightPreview.slug);
-      const method = existing ? "PUT" : "POST";
-      const res = await fetch(INSIGHTS_API, {
-        method,
-        headers: { ...authHeader, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...insightPreview, published: true }),
-      });
+      const res = await fetch(INSIGHTS_API, { method: existing ? "PUT" : "POST", headers: { ...authHeader, "Content-Type": "application/json" }, body: JSON.stringify({ ...insightPreview, published: true }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to save");
-      setMsg({ text: `Insight "${insightPreview.title}" ${existing ? "updated" : "created"} successfully!`, ok: true });
-      setInsightPreview(null);
-      fetchInsights();
-    } catch (err) {
-      setMsg({ text: err.message, ok: false });
-    }
+      setMsg({ text: `"${insightPreview.title}" ${existing ? "updated" : "published"}!`, ok: true });
+      setInsightPreview(null); fetchInsights();
+    } catch (err) { setMsg({ text: err.message, ok: false }); }
     setLoading(false);
   };
 
   const deleteInsight = async (slug) => {
-    if (!confirm(`Delete insight "${slug}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete insight "${slug}"?`)) return;
     try {
       const res = await fetch(`${INSIGHTS_API}?slug=${slug}`, { method: "DELETE", headers: authHeader });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
-      setMsg({ text: `Deleted insight "${slug}"`, ok: true });
-      fetchInsights();
+      setMsg({ text: `Deleted "${slug}"`, ok: true }); fetchInsights();
     } catch (err) { setMsg({ text: err.message, ok: false }); }
   };
 
-  const seedInsights = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/seed-insights", { method: "POST", headers: authHeader });
-      const json = await res.json();
-      if (json.error) {
-        setMsg({ text: json.error, ok: false });
-      } else {
-        setMsg({ text: json.message || "Seeded insights!", ok: true });
-      }
-      fetchInsights();
-    } catch (err) { setMsg({ text: err.message, ok: false }); }
-    setLoading(false);
-  };
+  const seedReports = async () => { setLoading(true); try { const res = await fetch("/api/admin/seed", { method: "POST", headers: authHeader }); const json = await res.json(); setMsg({ text: json.message || "Seeded!", ok: !json.error }); fetchReports(); } catch (err) { setMsg({ text: err.message, ok: false }); } setLoading(false); };
+  const seedInsights = async () => { setLoading(true); try { const res = await fetch("/api/admin/seed-insights", { method: "POST", headers: authHeader }); const json = await res.json(); setMsg({ text: json.message || "Seeded!", ok: !json.error }); fetchInsights(); } catch (err) { setMsg({ text: err.message, ok: false }); } setLoading(false); };
 
-  /* ── LOGIN ── */
+  /* ── LOGIN SCREEN ── */
   if (!authed) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 w-full max-w-sm">
-          <div className="text-center mb-6">
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+      <div className="min-h-screen bg-[#0A2540] flex items-center justify-center p-6">
+        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-sm">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-[#0A2540] rounded-xl flex items-center justify-center">
+              <span className="text-white text-xs font-bold tracking-wider">ME</span>
             </div>
-            <h1 className="font-heading text-xl font-bold text-gray-900">Report CMS</h1>
-            <p className="text-sm text-gray-500 mt-1">Upload Excel files to publish reports</p>
+            <div>
+              <p className="font-heading text-[15px] font-bold text-[#0A2540] leading-tight">MindEarth</p>
+              <p className="text-[10px] text-gray-400 tracking-[0.15em] uppercase">Editorial CMS</p>
+            </div>
           </div>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Admin password"
-            className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm mb-4 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none" />
-          <button type="submit" className="w-full bg-emerald-600 text-white font-semibold py-3 rounded-lg hover:bg-emerald-700 transition text-sm">Login</button>
+          <h1 className="font-heading text-[22px] font-bold text-[#0A2540] mb-1">Sign in</h1>
+          <p className="text-[13px] text-gray-400 mb-7">Enter your admin password to access the CMS.</p>
+          <label className="text-[11px] font-semibold text-gray-500 tracking-[0.1em] uppercase block mb-1.5">Password</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-5 focus:outline-none focus:ring-2 focus:ring-[#0A2540]/20 focus:border-[#0A2540] transition" />
+          <button type="submit" className="w-full bg-[#0A2540] text-white font-semibold text-sm py-3.5 rounded-xl hover:bg-[#0F172A] transition">Sign in →</button>
         </form>
       </div>
     );
   }
 
   /* ── MAIN CMS ── */
+  const navItems = [
+    { key: "insights", label: "Insights", icon: "insights", count: insights.length },
+    { key: "reports", label: "Reports", icon: "reports", count: reports.length },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+    <div className="min-h-screen bg-[#F8FAFC] flex">
+
+      {/* ═══ SIDEBAR ═══ */}
+      <aside className="w-[220px] shrink-0 bg-[#0A2540] flex flex-col h-screen sticky top-0">
+        {/* Logo */}
+        <div className="px-5 pt-6 pb-5 border-b border-white/[0.08]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-[#0B6E4F] rounded-lg flex items-center justify-center shrink-0">
+              <span className="text-white text-[10px] font-bold tracking-wider">ME</span>
             </div>
-            <h1 className="font-heading text-lg font-bold text-gray-900">MindEarth CMS</h1>
+            <div>
+              <p className="font-heading text-[13px] font-bold text-white leading-tight">MindEarth</p>
+              <p className="text-[9px] text-white/40 tracking-[0.15em] uppercase">Editorial CMS</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/30 px-2 mb-3">Content</p>
+          {navItems.map(item => (
+            <button
+              key={item.key}
+              onClick={() => { setCmsTab(item.key); setMsg({ text: "", ok: true }); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all ${cmsTab === item.key ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/[0.06]"}`}
+            >
+              <div className="flex items-center gap-2.5">
+                <SideIcon type={item.icon} />
+                <span className="text-[13px] font-semibold">{item.label}</span>
+              </div>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${cmsTab === item.key ? "bg-white/20 text-white" : "bg-white/[0.08] text-white/40"}`}>{item.count}</span>
+            </button>
+          ))}
+
+          <div className="pt-4 mt-4 border-t border-white/[0.06]">
+            <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/30 px-2 mb-3">Tools</p>
             {cmsTab === "reports" && (
-              <button onClick={seedReports} disabled={loading} className="text-xs text-gray-500 hover:text-emerald-600 transition px-3 py-2 rounded-lg hover:bg-gray-50">Seed Existing Reports</button>
+              <button onClick={seedReports} disabled={loading} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium">
+                <SideIcon type="upload" />Seed Reports
+              </button>
             )}
             {cmsTab === "insights" && (
-              <button onClick={seedInsights} disabled={loading} className="text-xs text-gray-500 hover:text-emerald-600 transition px-3 py-2 rounded-lg hover:bg-gray-50">Seed Existing Insights</button>
-            )}
-            <button onClick={() => { sessionStorage.removeItem("admin_pw"); setAuthed(false); }} className="text-xs text-gray-400 hover:text-red-500 transition px-3 py-2 rounded-lg hover:bg-gray-50">Logout</button>
-          </div>
-        </div>
-        {/* Tab Navigation */}
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex gap-0 border-b-0">
-            {[
-              { key: "reports", label: "Reports" },
-              { key: "insights", label: "Insights" },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => { setCmsTab(tab.key); setMsg({ text: "", ok: true }); }}
-                className={`px-5 py-2.5 text-sm font-semibold border-b-2 transition ${cmsTab === tab.key ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-400 hover:text-gray-600"}`}
-              >
-                {tab.label}
+              <button onClick={seedInsights} disabled={loading} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium">
+                <SideIcon type="upload" />Seed Insights
               </button>
-            ))}
+            )}
+            <a href="/admin" className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition text-[13px] font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              Main Admin
+            </a>
           </div>
-        </div>
-      </header>
+        </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {msg.text && (
-          <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-medium ${msg.ok ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
-            {msg.text}
-          </div>
-        )}
-
-        {/* ══════ REPORTS TAB ══════ */}
-        {cmsTab === "reports" && (<>
-
-        {/* Database Setup Banner */}
-        {dbMissing && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-amber-800 mb-1">Database Setup Required</h3>
-                <p className="text-sm text-amber-700 mb-3">The reports table hasn&apos;t been created in your Supabase database yet. You need to run a one-time SQL setup.</p>
-                {setupSql ? (
-                  <div>
-                    <p className="text-xs text-amber-600 font-medium mb-2">Copy this SQL and paste it in your Supabase Dashboard → SQL Editor → click &quot;Run&quot;:</p>
-                    <pre className="bg-white border border-amber-200 rounded-lg p-4 text-xs text-gray-700 overflow-x-auto max-h-60 overflow-y-auto whitespace-pre-wrap">{setupSql}</pre>
-                    <button onClick={() => { navigator.clipboard.writeText(setupSql); setMsg({ text: "SQL copied to clipboard!", ok: true }); }} className="mt-3 text-sm font-medium bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">
-                      Copy SQL to Clipboard
-                    </button>
-                  </div>
-                ) : (
-                  <button onClick={setupDatabase} disabled={loading} className="text-sm font-medium bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition disabled:opacity-50">
-                    {loading ? "Checking..." : "Get Setup Instructions"}
-                  </button>
-                )}
-              </div>
+        {/* User */}
+        <div className="px-5 py-4 border-t border-white/[0.08]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-[#0B6E4F] flex items-center justify-center text-white text-[10px] font-bold">A</div>
+              <span className="text-[12px] text-white/60 font-medium">Admin</span>
             </div>
-          </div>
-        )}
-
-        {/* Upload Area */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="font-heading text-lg font-bold text-gray-900">Upload Report</h2>
-              <p className="text-sm text-gray-500 mt-1">Upload an Excel file to create or update a report. All formatting is automatic.</p>
-            </div>
-            <button onClick={downloadTemplate} className="flex items-center gap-2 bg-gray-100 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Download Template
+            <button onClick={() => { sessionStorage.removeItem("admin_pw"); setAuthed(false); }} title="Sign out">
+              <SideIcon type="logout" />
             </button>
           </div>
+        </div>
+      </aside>
 
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-            onClick={() => fileRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${dragOver ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-300 hover:bg-gray-50"}`}
-          >
-            <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={onFileChange} className="hidden" />
-            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+      {/* ═══ MAIN CONTENT ═══ */}
+      <div className="flex-1 overflow-auto">
+
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-20 px-8 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="font-heading text-[18px] font-bold text-[#0A2540]">
+              {cmsTab === "insights" ? "Insights" : "Market Reports"}
+            </h1>
+            <p className="text-[12px] text-gray-400 mt-0.5">
+              {cmsTab === "insights" ? `${insights.length} articles published` : `${reports.length} reports published`}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {cmsTab === "insights" && (
+              <button onClick={downloadInsightTemplate} className="flex items-center gap-2 text-[13px] font-semibold text-[#0A2540] border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Excel Template
+              </button>
+            )}
+            {cmsTab === "reports" && (
+              <button onClick={downloadTemplate} className="flex items-center gap-2 text-[13px] font-semibold text-[#0A2540] border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Excel Template
+              </button>
+            )}
+            <button
+              onClick={() => cmsTab === "insights" ? insightFileRef.current?.click() : fileRef.current?.click()}
+              className="flex items-center gap-2 text-[13px] font-semibold bg-[#0B6E4F] text-white px-5 py-2 rounded-lg hover:bg-[#095C42] transition"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M12 4v16m8-8H4" /></svg>
+              New {cmsTab === "insights" ? "Insight" : "Report"}
+            </button>
+            <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={e => handleFile(e.target.files?.[0])} className="hidden" />
+            <input ref={insightFileRef} type="file" accept=".xlsx,.xls" onChange={e => handleInsightFile(e.target.files?.[0])} className="hidden" />
+          </div>
+        </header>
+
+        <div className="px-8 py-6 max-w-5xl">
+
+          {/* Toast */}
+          {msg.text && (
+            <div className={`mb-5 px-4 py-3 rounded-xl text-[13px] font-medium flex items-center gap-2 ${msg.ok ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              {msg.ok ? <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M5 13l4 4L19 7"/></svg> : <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>}
+              {msg.text}
+              <button onClick={() => setMsg({ text: "", ok: true })} className="ml-auto text-current opacity-50 hover:opacity-100">✕</button>
             </div>
-            {loading ? <p className="text-sm text-gray-500 font-medium">Processing...</p> : (
-              <>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Drop your Excel file here or click to browse</p>
-                <p className="text-xs text-gray-400">Supports .xlsx and .xls files</p>
-              </>
+          )}
+
+          {/* DB warning */}
+          {dbMissing && cmsTab === "reports" && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 text-[13px] text-amber-800">
+              <p className="font-bold mb-1">Database setup required</p>
+              <p className="text-amber-700 mb-3">The reports table hasn&apos;t been created yet. Run the SQL migration in your Supabase Dashboard.</p>
+              {setupSql ? (
+                <>
+                  <pre className="bg-white border border-amber-200 rounded-lg p-3 text-xs text-gray-700 overflow-x-auto max-h-48 mb-3">{setupSql}</pre>
+                  <button onClick={() => { navigator.clipboard.writeText(setupSql); setMsg({ text: "SQL copied!", ok: true }); }} className="text-xs font-semibold bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">Copy SQL</button>
+                </>
+              ) : (
+                <button onClick={async () => { setLoading(true); const res = await fetch("/api/admin/setup-db", { method: "POST", headers: authHeader }); const j = await res.json(); if (j.needsManualSetup) setSetupSql(j.sql); else setMsg({ text: j.message || "Done", ok: true }); setLoading(false); }} disabled={loading} className="text-xs font-semibold bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition">Get Instructions</button>
+              )}
+            </div>
+          )}
+
+          {/* ══ DROP ZONE ══ */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); cmsTab === "insights" ? setDragOverInsight(true) : setDragOver(true); }}
+            onDragLeave={() => { setDragOver(false); setDragOverInsight(false); }}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); setDragOverInsight(false); const f = e.dataTransfer.files?.[0]; cmsTab === "insights" ? handleInsightFile(f) : handleFile(f); }}
+            onClick={() => cmsTab === "insights" ? insightFileRef.current?.click() : fileRef.current?.click()}
+            className={`mb-6 border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${(dragOver || dragOverInsight) ? "border-[#0B6E4F] bg-emerald-50/50" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"}`}
+          >
+            {loading ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-2 border-[#0B6E4F] border-t-transparent rounded-full animate-spin" />
+                <p className="text-[13px] text-gray-500 font-medium">Processing file…</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-1">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                </div>
+                <p className="text-[14px] font-semibold text-gray-700">Drop Excel file to import</p>
+                <p className="text-[12px] text-gray-400">or click to browse — .xlsx / .xls supported</p>
+              </div>
             )}
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-4">
-            {[["1. Download Template", "Get the Excel template with all sheets pre-formatted"], ["2. Fill In Data", "Add your report data in each sheet — just fill the cells"], ["3. Upload & Publish", "Upload the filled file and click Publish — done!"]].map(([t, d]) => (
-              <div key={t} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                <p className="text-sm font-semibold text-gray-800 mb-1">{t}</p>
-                <p className="text-xs text-gray-500">{d}</p>
+          {/* ══ INSIGHT PREVIEW ══ */}
+          {cmsTab === "insights" && insightPreview && (
+            <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-[#F8FAFC]">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="font-heading text-[15px] font-bold text-[#0A2540]">Preview — {insightPreview.title}</h2>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setInsightPreview(null)} className="text-[12px] font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Discard</button>
+                  <button onClick={publishInsight} disabled={loading} className="text-[12px] font-semibold bg-[#0B6E4F] text-white px-5 py-2 rounded-lg hover:bg-[#095C42] transition disabled:opacity-50">
+                    {loading ? "Publishing…" : insights.find(i => i.slug === insightPreview.slug) ? "Update" : "Publish Insight"}
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── PREVIEW ── */}
-        {preview && (
-          <div className="bg-white rounded-2xl border-2 border-emerald-200 shadow-sm mb-8 overflow-hidden">
-            {/* Preview Header Bar */}
-            <div className="bg-emerald-50 border-b border-emerald-200 px-8 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-                <h2 className="font-heading text-lg font-bold text-gray-900">Preview</h2>
-                <span className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">How your report will look</span>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setPreview(null)} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition">Cancel</button>
-                <button onClick={publish} disabled={loading} className="text-sm text-white font-semibold bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-lg transition disabled:opacity-50">
-                  {loading ? "Publishing..." : reports.find(r => r.slug === preview.slug) ? "Update Report" : "Publish Report"}
-                </button>
+              <div className="p-6 grid md:grid-cols-2 gap-6">
+                <div>
+                  {insightPreview.img && <img src={insightPreview.img} alt="" className="w-full h-44 object-cover rounded-xl border border-gray-100 mb-4" />}
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge color="blue">{insightPreview.cat}</Badge>
+                    <span className="text-[11px] text-gray-400">{insightPreview.date}</span>
+                    <span className="text-[11px] text-gray-400">{insightPreview.read_time} read</span>
+                  </div>
+                  <h3 className="font-heading text-[18px] font-bold text-[#0A2540] mb-2 leading-snug">{insightPreview.title}</h3>
+                  {insightPreview.subtitle && <p className="text-[12px] text-gray-400 mb-2">{insightPreview.subtitle}</p>}
+                  <p className="text-[13px] text-gray-600 leading-relaxed">{insightPreview.summary}</p>
+                </div>
+                <div className="space-y-4">
+                  {insightPreview.key_takeaways?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-2">Key Takeaways</p>
+                      <ul className="space-y-1.5">
+                        {insightPreview.key_takeaways.map((t, i) => (
+                          <li key={i} className="flex gap-2 text-[13px] text-gray-700">
+                            <span className="w-4 h-4 rounded-full bg-[#0B6E4F] text-white flex items-center justify-center text-[9px] font-bold shrink-0 mt-0.5">{i+1}</span>{t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {insightPreview.sections?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-2">Sections ({insightPreview.sections.length})</p>
+                      <div className="space-y-2">
+                        {insightPreview.sections.map((s, i) => (
+                          <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                            <p className="text-[13px] font-semibold text-[#0A2540] mb-1">{s.heading}</p>
+                            <p className="text-[11px] text-gray-500 line-clamp-2">{s.body}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {insightPreview.tags?.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-2">Tags</p>
+                      <div className="flex flex-wrap gap-1.5">{insightPreview.tags.map(t => <Badge key={t} color="gray">{t}</Badge>)}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="p-8">
-              {/* Report Header Preview */}
-              <div className="grid lg:grid-cols-3 gap-8 mb-8">
-                <div className="lg:col-span-2">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-semibold text-gray-400">{preview.code}</span>
-                    {preview.badge && <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded">{preview.badge}</span>}
-                    <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded">{preview.cat}</span>
-                  </div>
-                  <h3 className="font-heading text-2xl font-bold text-gray-900 mb-3">{preview.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-5">{preview.overview || preview.desc}</p>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                    {[["Market Size", preview.size], ["CAGR", preview.cagr], ["Base Year", preview.baseYear], ["Forecast", preview.period]].map(([l, v]) => (
-                      <div key={l} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                        <p className="text-[9px] font-bold text-gray-400 tracking-wider uppercase mb-1">{l}</p>
-                        <p className={`text-base font-bold ${l === "CAGR" ? "text-emerald-600" : "text-gray-800"}`}>{v || "—"}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Image Upload / Preview */}
-                  <div className="rounded-xl overflow-hidden border border-gray-200 relative group">
-                    {preview.img ? (
-                      <>
-                        <img src={preview.img} alt={preview.title} className="w-full h-48 sm:h-56 object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); imgRef.current?.click(); }}
-                            className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
-                          >
-                            Change Image
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div
-                        onClick={(e) => { e.stopPropagation(); imgRef.current?.click(); }}
-                        className="h-48 sm:h-56 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
-                      >
-                        <svg className="w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <p className="text-sm font-medium text-gray-400">Click to upload a cover image</p>
-                        <p className="text-xs text-gray-300 mt-1">Or add an image URL in the Excel file</p>
-                      </div>
-                    )}
-                    <input ref={imgRef} type="file" accept="image/*" onChange={(e) => handleImageUpload(e.target.files?.[0])} className="hidden" />
-                  </div>
+          {/* ══ REPORT PREVIEW ══ */}
+          {cmsTab === "reports" && preview && (
+            <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-[#F8FAFC]">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="font-heading text-[15px] font-bold text-[#0A2540]">Preview — {preview.title}</h2>
                 </div>
-
-                {/* Pricing Preview */}
-                <div className="bg-white rounded-xl border-2 border-emerald-200 p-5">
-                  <h4 className="font-heading text-sm font-bold text-gray-900 mb-4">Pricing Preview</h4>
-                  {[["Single User", preview.price, "1 user"], ["Multi User", (preview.price || 0) + 1000, "Up to 5 users"], ["Enterprise", (preview.price || 0) + 2500, "Unlimited + Excel"]].map(([name, price, desc], i) => (
-                    <div key={name} className={`p-3 rounded-lg mb-2 border ${i === 0 ? "border-emerald-200 bg-emerald-50" : "border-gray-100"}`}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold text-gray-800">{name}</span>
-                        <span className="text-sm font-bold text-emerald-600">${price?.toLocaleString()}</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-                    </div>
-                  ))}
+                <div className="flex gap-2">
+                  <button onClick={() => setPreview(null)} className="text-[12px] font-semibold text-gray-500 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Discard</button>
+                  <button onClick={publish} disabled={loading} className="text-[12px] font-semibold bg-[#0B6E4F] text-white px-5 py-2 rounded-lg hover:bg-[#095C42] transition disabled:opacity-50">
+                    {loading ? "Publishing…" : reports.find(r => r.slug === preview.slug) ? "Update" : "Publish Report"}
+                  </button>
                 </div>
               </div>
-
-              {/* Tab Preview */}
-              <div className="border-t border-gray-100 pt-6">
-                <div className="flex gap-1 mb-6 border-b border-gray-100 overflow-x-auto">
-                  {[
-                    { k: "overview", l: "Overview" },
-                    ...(preview.esgContent ? [{ k: "esg", l: "ESG & GRI Analysis" }] : []),
-                    { k: "toc", l: "Table of Contents" },
-                    { k: "segments", l: "Segmentation" },
-                    { k: "companies", l: "Key Companies" },
-                    { k: "data", l: "Data Summary" },
-                  ].map(tab => (
-                    <button key={tab.k} onClick={() => setPreviewTab(tab.k)}
-                      className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition ${previewTab === tab.k ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-400 hover:text-gray-600"}`}>
-                      {tab.l}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Overview Tab */}
-                {previewTab === "overview" && (
-                  <div className="space-y-6">
-                    {preview.overview && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-2">Overview</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">{preview.overview}</p>
-                      </div>
-                    )}
+              <div className="p-6">
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <div className="relative rounded-xl overflow-hidden border border-gray-100 group cursor-pointer mb-4" onClick={() => imgRef.current?.click()}>
+                      {preview.img ? (
+                        <>
+                          <img src={preview.img} alt="" className="w-full h-44 object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                            <span className="bg-white text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-lg">Change image</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="h-44 bg-gray-50 flex flex-col items-center justify-center">
+                          <svg className="w-8 h-8 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <p className="text-xs text-gray-400">Click to upload cover image</p>
+                        </div>
+                      )}
+                      <input ref={imgRef} type="file" accept="image/*" onChange={e => handleImageUpload(e.target.files?.[0])} className="hidden" />
+                    </div>
+                    <div className="flex gap-2 mb-3">
+                      <Badge color="green">{preview.cat}</Badge>
+                      {preview.badge && <Badge color="amber">{preview.badge}</Badge>}
+                      <span className="text-[11px] text-gray-400">{preview.code}</span>
+                    </div>
+                    <h3 className="font-heading text-[18px] font-bold text-[#0A2540] mb-2">{preview.title}</h3>
+                    <p className="text-[13px] text-gray-500 leading-relaxed">{preview.overview || preview.desc}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      {[["Market Size", preview.size], ["CAGR", preview.cagr], ["Base Year", preview.baseYear], ["Forecast", preview.period]].map(([l, v]) => (
+                        <div key={l} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                          <p className="text-[9px] font-bold text-gray-400 tracking-wider uppercase mb-1">{l}</p>
+                          <p className={`text-[15px] font-bold ${l === "CAGR" ? "text-[#0B6E4F]" : "text-[#0A2540]"}`}>{v || "—"}</p>
+                        </div>
+                      ))}
+                    </div>
                     {preview.keyTakeaways?.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-2">Key Takeaways</h4>
-                        <ul className="space-y-2">
+                        <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-400 mb-2">Key Takeaways</p>
+                        <ul className="space-y-1.5">
                           {preview.keyTakeaways.map((t, i) => (
-                            <li key={i} className="flex gap-2 text-sm text-gray-600"><span className="text-emerald-500 mt-0.5">&#10003;</span>{t}</li>
+                            <li key={i} className="flex gap-2 text-[13px] text-gray-700"><span className="text-[#0B6E4F] shrink-0">✓</span>{t}</li>
                           ))}
                         </ul>
                       </div>
                     )}
-                    {preview.drivers?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Market Drivers</h4>
-                        <div className="space-y-2">
-                          {preview.drivers.map((d, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-gray-800">{d.title}</span>
-                                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{d.impact}</span>
-                              </div>
-                              <p className="text-xs text-gray-400">{d.geo} &middot; {d.timeline}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {preview.restraints?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Market Restraints</h4>
-                        <div className="space-y-2">
-                          {preview.restraints.map((d, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-gray-800">{d.title}</span>
-                                <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{d.impact}</span>
-                              </div>
-                              <p className="text-xs text-gray-400">{d.geo} &middot; {d.timeline}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {preview.analysisContent?.faqs?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">FAQs</h4>
-                        <div className="space-y-2">
-                          {preview.analysisContent.faqs.map((f, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <p className="text-sm font-medium text-gray-800 mb-1">{f.q}</p>
-                              <p className="text-xs text-gray-500">{f.a}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {preview.developments?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Recent Developments</h4>
-                        <div className="space-y-2">
-                          {preview.developments.map((d, i) => (
-                            <div key={i} className="flex gap-3 text-sm">
-                              <span className="text-xs font-semibold text-gray-400 whitespace-nowrap min-w-[100px]">{d.date}</span>
-                              <span className="text-gray-600">{d.text}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ESG Tab */}
-                {previewTab === "esg" && preview.esgContent && (
-                  <div className="space-y-6">
-                    {preview.esgContent.subtitle && <p className="text-xs text-gray-400 font-medium">{preview.esgContent.subtitle}</p>}
-                    {preview.esgContent.griFramework?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">GRI Framework Alignment</h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
-                            <thead><tr className="bg-gray-50"><th className="text-left p-2 font-semibold text-gray-600">Series</th><th className="text-left p-2 font-semibold text-gray-600">Covers</th><th className="text-left p-2 font-semibold text-gray-600">Stds</th><th className="text-left p-2 font-semibold text-gray-600">Relevance</th></tr></thead>
-                            <tbody>{preview.esgContent.griFramework.map((g, i) => (
-                              <tr key={i} className="border-t border-gray-100"><td className="p-2 font-medium text-gray-800">{g.series}</td><td className="p-2 text-gray-500">{g.covers}</td><td className="p-2 text-gray-500">{g.stds}</td><td className="p-2 text-gray-500">{g.relevance}</td></tr>
-                            ))}</tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-                    {preview.esgContent.regulatoryDrivers?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Regulatory Drivers</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {preview.esgContent.regulatoryDrivers.map((r, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100 flex-1 min-w-[200px]">
-                              <span className={`text-[10px] text-white font-bold px-2 py-0.5 rounded ${r.color}`}>{r.tag}</span>
-                              <p className="text-xs text-gray-500 mt-2">{r.desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {preview.esgContent.materialRisks?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Material ESG Risks</h4>
-                        <div className="space-y-2">
-                          {preview.esgContent.materialRisks.map((r, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium text-gray-800">{r.risk}</span>
-                                <span className={`text-[10px] text-white font-bold px-2 py-0.5 rounded ${r.levelColor}`}>{r.level}</span>
-                                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{r.pillar}</span>
-                              </div>
-                              <p className="text-xs text-gray-500">{r.exposure}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {preview.esgContent.benchmarks?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Industry Benchmarks</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {preview.esgContent.benchmarks.map((b, i) => (
-                            <div key={i} className="bg-gray-50 rounded-lg p-3 border border-gray-100 text-center">
-                              <p className="text-lg font-bold text-emerald-600">{b.value}</p>
-                              <p className="text-xs font-medium text-gray-600">{b.label}</p>
-                              <p className="text-[10px] text-gray-400 mt-0.5">{b.unit}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* TOC Tab */}
-                {previewTab === "toc" && (
-                  <div>
-                    {preview.toc?.length > 0 ? (
-                      <div className="space-y-1">
-                        {preview.toc.map((entry, i) => {
-                          const isSection = entry.startsWith("§");
-                          const isSubItem = /^\d+\.\d+/.test(entry);
-                          return (
-                            <div key={i} className={`${isSection ? "mt-4 mb-2" : ""}`}>
-                              <p className={`text-sm ${isSection ? "font-bold text-emerald-700 uppercase tracking-wide text-xs" : isSubItem ? "text-gray-500 pl-6" : "font-medium text-gray-800 pl-2"}`}>
-                                {entry}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : <p className="text-sm text-gray-400 italic">No TOC entries — add them in the &quot;TOC&quot; sheet</p>}
-                  </div>
-                )}
-
-                {/* Segments Tab */}
-                {previewTab === "segments" && (
-                  <div className="space-y-6">
-                    {preview.segmentTables && Object.keys(preview.segmentTables).length > 0 ? (
-                      Object.entries(preview.segmentTables).map(([key, rows]) => (
-                        <div key={key}>
-                          <h4 className="text-sm font-bold text-gray-800 mb-3 capitalize">By {key === "rigType" ? "Segment" : key}</h4>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead><tr className="bg-gray-50"><th className="text-left p-3 font-semibold text-gray-600">Segment</th><th className="text-left p-3 font-semibold text-gray-600">Market Share</th><th className="text-left p-3 font-semibold text-gray-600">CAGR</th><th className="text-left p-3 font-semibold text-gray-600">Tag</th></tr></thead>
-                              <tbody>{rows.map((row, i) => (
-                                <tr key={i} className="border-t border-gray-100">
-                                  <td className="p-3 font-medium text-gray-800">{row.name}</td>
-                                  <td className="p-3 text-gray-600">{row.share}</td>
-                                  <td className="p-3 text-emerald-600 font-medium">{row.cagr}</td>
-                                  <td className="p-3">{row.tag && <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${row.tag === "Largest" ? "bg-blue-50 text-blue-600" : "bg-amber-50 text-amber-600"}`}>{row.tag}</span>}</td>
-                                </tr>
-                              ))}</tbody>
-                            </table>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">Segments</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(preview.segments || []).map((s, i) => <span key={i} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg">{s}</span>)}
-                        </div>
-                      </div>
-                    )}
-                    {preview.regionTable?.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-800 mb-3">By Region</h4>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead><tr className="bg-gray-50"><th className="text-left p-3 font-semibold text-gray-600">Region</th><th className="text-left p-3 font-semibold text-gray-600">Share</th><th className="text-left p-3 font-semibold text-gray-600">CAGR</th><th className="text-left p-3 font-semibold text-gray-600">Key Factors</th></tr></thead>
-                            <tbody>{preview.regionTable.map((r, i) => (
-                              <tr key={i} className="border-t border-gray-100">
-                                <td className="p-3 font-medium text-gray-800">{r.name}</td>
-                                <td className="p-3 text-gray-600">{r.share}</td>
-                                <td className="p-3 text-emerald-600 font-medium">{r.cagr}</td>
-                                <td className="p-3 text-xs text-gray-500">{r.factors}</td>
-                              </tr>
-                            ))}</tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Companies Tab */}
-                {previewTab === "companies" && (
-                  <div>
-                    {preview.companyTable?.length > 0 ? (
-                      <div className="grid gap-3">
-                        {preview.companyTable.map((c, i) => (
-                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex items-start gap-4">
-                            <div className="w-10 h-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center shrink-0">
-                              <span className="text-xs font-bold text-emerald-600">{c.name.charAt(0)}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h5 className="text-sm font-bold text-gray-800">{c.name}</h5>
-                              <p className="text-xs text-gray-400 mt-0.5">{c.hq}</p>
-                              <p className="text-xs text-gray-500 mt-1">{c.capabilities}</p>
-                            </div>
-                            {preview.domains?.[i] && <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded">{preview.domains[i]}</span>}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {(preview.companies || []).map((c, i) => <span key={i} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg">{c}</span>)}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Data Summary Tab */}
-                {previewTab === "data" && (
-                  <div className="space-y-3">
-                    <PreviewSection title="Description" count={preview.desc ? 1 : 0} />
-                    <PreviewSection title="Overview" count={preview.overview ? 1 : 0} />
-                    <PreviewSection title="Cover Image" count={preview.img ? 1 : 0} />
-                    <PreviewSection title="Segments (Primary)" count={preview.segments?.length || 0} />
-                    <PreviewSection title="Segments (Technology)" count={preview.segmentsByTech?.length || 0} />
-                    <PreviewSection title="Segments (Application)" count={preview.segmentsByApp?.length || 0} />
-                    <PreviewSection title="Segment Tables" count={Object.keys(preview.segmentTables || {}).length} extra="tables" />
-                    <PreviewSection title="Companies" count={preview.companies?.length || 0} />
-                    <PreviewSection title="Company Profiles" count={preview.companyTable?.length || 0} />
-                    <PreviewSection title="Regions" count={preview.regions?.length || 0} />
-                    <PreviewSection title="Region Details" count={preview.regionTable?.length || 0} />
-                    <PreviewSection title="Drivers" count={preview.drivers?.length || 0} />
-                    <PreviewSection title="Restraints" count={preview.restraints?.length || 0} />
-                    <PreviewSection title="Key Takeaways" count={preview.keyTakeaways?.length || 0} />
-                    <PreviewSection title="Analysis Sections" count={Object.keys(preview.analysisContent || {}).filter(k => k !== "faqs" && k !== "scope").length} />
-                    <PreviewSection title="FAQs" count={preview.analysisContent?.faqs?.length || 0} />
-                    <PreviewSection title="Scope Fields" count={Object.keys(preview.analysisContent?.scope || {}).length} />
-                    <PreviewSection title="Developments" count={preview.developments?.length || 0} />
-                    <PreviewSection title="TOC Entries" count={preview.toc?.length || 0} />
-                    <PreviewSection title="ESG Content" count={preview.esgContent ? Object.keys(preview.esgContent).length : 0} extra="sections" />
-                    {preview.esgContent && (
-                      <div className="pl-6 space-y-1">
-                        <PreviewSection title="GRI Framework" count={preview.esgContent.griFramework?.length || 0} small />
-                        <PreviewSection title="Regulatory Drivers" count={preview.esgContent.regulatoryDrivers?.length || 0} small />
-                        <PreviewSection title="Material Risks" count={preview.esgContent.materialRisks?.length || 0} small />
-                        <PreviewSection title="Solutions" count={preview.esgContent.solutions?.length || 0} small />
-                        <PreviewSection title="KPIs" count={preview.esgContent.kpis?.length || 0} small />
-                        <PreviewSection title="Investor Landscape" count={preview.esgContent.investorLandscape?.length || 0} small />
-                        <PreviewSection title="Benchmarks" count={preview.esgContent.benchmarks?.length || 0} small />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Existing Reports */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-1">Published Reports</h2>
-          <p className="text-sm text-gray-500 mb-6">{reports.length} report{reports.length !== 1 ? "s" : ""} in database</p>
-
-          {reports.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-              <p className="text-sm font-medium">No reports yet</p>
-              <p className="text-xs mt-1">Upload an Excel file or seed existing reports to get started</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {reports.map(r => (
-                <div key={r.slug} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition group">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-gray-800 truncate">{r.title}</h3>
-                      {r.badge && <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded">{r.badge}</span>}
-                      <span className="text-[10px] font-medium bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded">{r.cat}</span>
-                      {r.published ? (
-                        <span className="text-[10px] font-medium bg-green-50 text-green-600 px-2 py-0.5 rounded">Live</span>
-                      ) : (
-                        <span className="text-[10px] font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Draft</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">{r.slug} &middot; {r.code} &middot; {r.size} &middot; CAGR {r.cagr}</p>
-                  </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-                    <a href={`/reports/${r.slug}`} target="_blank" className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 transition">View</a>
-                    <button onClick={() => deleteReport(r.slug)} className="text-xs text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">Delete</button>
                   </div>
                 </div>
-              ))}
+
+                {/* TOC & segments preview tabs */}
+                <div className="border-t border-gray-100 pt-5">
+                  <div className="flex gap-0 border-b border-gray-100 mb-5 overflow-x-auto">
+                    {[{k:"overview",l:"Overview"},{k:"toc",l:"TOC"},{k:"segments",l:"Segments"},{k:"companies",l:"Companies"}].map(t => (
+                      <button key={t.k} onClick={() => setPreviewTab(t.k)} className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 whitespace-nowrap transition ${previewTab===t.k?"border-[#0A2540] text-[#0A2540]":"border-transparent text-gray-400 hover:text-gray-600"}`}>{t.l}</button>
+                    ))}
+                  </div>
+                  {previewTab === "toc" && (
+                    <div className="space-y-1 max-h-64 overflow-y-auto">
+                      {preview.toc?.length > 0 ? preview.toc.map((e, i) => {
+                        const isSec = e.startsWith("§"), isSub = /^\d+\.\d+/.test(e);
+                        return <p key={i} className={`text-[13px] ${isSec ? "font-bold text-[#0B6E4F] uppercase text-[10px] tracking-wide mt-3" : isSub ? "text-gray-400 pl-5" : "font-medium text-gray-700 pl-2"}`}>{e}</p>;
+                      }) : <p className="text-[13px] text-gray-400 italic">No TOC — add in the TOC sheet</p>}
+                    </div>
+                  )}
+                  {previewTab === "overview" && (
+                    <div className="space-y-3">
+                      {preview.drivers?.length > 0 && <p className="text-[13px] text-gray-500">{preview.drivers.length} market drivers · {preview.restraints?.length || 0} restraints · {preview.developments?.length || 0} recent developments</p>}
+                    </div>
+                  )}
+                  {previewTab === "segments" && (
+                    <div className="flex flex-wrap gap-2">
+                      {(preview.segments || []).map(s => <Badge key={s} color="gray">{s}</Badge>)}
+                      {(preview.regions || []).map(r => <Badge key={r} color="navy">{r}</Badge>)}
+                    </div>
+                  )}
+                  {previewTab === "companies" && (
+                    <div className="flex flex-wrap gap-2">
+                      {(preview.companies || []).map(c => <span key={c} className="text-[12px] text-gray-700 bg-gray-100 px-3 py-1 rounded-full">{c}</span>)}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
-        </div>
 
-        </>)}
-
-        {/* ══════ INSIGHTS TAB ══════ */}
-        {cmsTab === "insights" && (<>
-
-        {/* Insight Upload Area */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          {/* ══ PUBLISHED INSIGHTS LIST ══ */}
+          {cmsTab === "insights" && (
             <div>
-              <h2 className="font-heading text-lg font-bold text-gray-900">Upload Insight</h2>
-              <p className="text-sm text-gray-500 mt-1">Upload an Excel file to create or update an insight article.</p>
-            </div>
-            <button onClick={downloadInsightTemplate} className="flex items-center gap-2 bg-gray-100 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-200 transition">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              Download Insight Template
-            </button>
-          </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading text-[15px] font-bold text-[#0A2540]">Published Insights</h2>
+                <span className="text-[12px] text-gray-400">{insights.length} total</span>
+              </div>
 
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); handleInsightFile(e.dataTransfer.files?.[0]); }}
-            onClick={() => insightFileRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all ${dragOver ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:border-emerald-300 hover:bg-gray-50"}`}
-          >
-            <input ref={insightFileRef} type="file" accept=".xlsx,.xls" onChange={(e) => handleInsightFile(e.target.files?.[0])} className="hidden" />
-            <div className="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-            </div>
-            {loading ? <p className="text-sm text-gray-500 font-medium">Processing...</p> : (
-              <>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Drop your Insight Excel file here or click to browse</p>
-                <p className="text-xs text-gray-400">Supports .xlsx and .xls files</p>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Insight Preview */}
-        {insightPreview && (
-          <div className="bg-white rounded-2xl border-2 border-sky-200 shadow-sm mb-8 overflow-hidden">
-            <div className="bg-sky-50 border-b border-sky-200 px-8 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-3 h-3 bg-sky-500 rounded-full animate-pulse" />
-                <h2 className="font-heading text-lg font-bold text-gray-900">Insight Preview</h2>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setInsightPreview(null)} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition">Cancel</button>
-                <button onClick={publishInsight} disabled={loading} className="text-sm text-white font-semibold bg-sky-600 hover:bg-sky-700 px-6 py-2 rounded-lg transition disabled:opacity-50">
-                  {loading ? "Publishing..." : insights.find(i => i.slug === insightPreview.slug) ? "Update Insight" : "Publish Insight"}
-                </button>
-              </div>
-            </div>
-            <div className="p-8">
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[10px] font-bold tracking-wider uppercase ${insightPreview.cat === "TRENDS" ? "text-emerald-600" : insightPreview.cat === "DATA" ? "text-sky-600" : "text-amber-600"}`}>{insightPreview.cat}</span>
-                  <span className="text-xs text-gray-400">{insightPreview.date}</span>
-                  <span className="text-xs text-gray-400">{insightPreview.read_time} read</span>
+              {insights.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
+                  <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <SideIcon type="insights" />
+                  </div>
+                  <p className="text-[15px] font-semibold text-gray-700 mb-1">No insights yet</p>
+                  <p className="text-[13px] text-gray-400">Upload an Excel file or click "Seed Insights" to populate from existing data.</p>
                 </div>
-                <h3 className="font-heading text-2xl font-bold text-gray-900 mb-2">{insightPreview.title}</h3>
-                {insightPreview.subtitle && <p className="text-sm text-gray-500 mb-3">{insightPreview.subtitle}</p>}
-                <p className="text-sm text-gray-600 leading-relaxed">{insightPreview.summary}</p>
-              </div>
-              {insightPreview.img && (
-                <div className="rounded-xl overflow-hidden border border-gray-200 mb-6">
-                  <img src={insightPreview.img} alt={insightPreview.title} className="w-full h-48 object-cover" />
-                </div>
-              )}
-              {insightPreview.key_takeaways?.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-bold text-gray-800 mb-2">Key Takeaways</h4>
-                  <ul className="space-y-1">
-                    {insightPreview.key_takeaways.map((t, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-gray-600"><span className="text-emerald-500 mt-0.5">&#10003;</span>{t}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {insightPreview.sections?.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-bold text-gray-800 mb-3">Sections ({insightPreview.sections.length})</h4>
-                  <div className="space-y-3">
-                    {insightPreview.sections.map((s, i) => (
-                      <div key={i} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                        <h5 className="text-sm font-semibold text-gray-800 mb-1">{s.heading}</h5>
-                        <p className="text-xs text-gray-500 line-clamp-2">{s.body}</p>
-                        {s.pullQuote && <p className="text-xs text-sky-600 italic mt-2 border-l-2 border-sky-300 pl-2">&ldquo;{s.pullQuote}&rdquo;</p>}
+              ) : (
+                <div className="space-y-2">
+                  {insights.map((item, idx) => (
+                    <div key={item.slug} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-5 hover:border-gray-300 transition group">
+                      {/* Thumbnail */}
+                      <div className="w-20 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                        {item.img ? <img src={item.img} alt="" className="w-full h-full object-cover" /> : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" /></svg>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                      {/* Meta */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge color={item.cat === "TRENDS" ? "green" : item.cat === "DATA" ? "blue" : item.cat === "RESEARCH" ? "navy" : "amber"}>{item.cat}</Badge>
+                          {item.featured && <Badge color="amber">Featured</Badge>}
+                          <Badge color={item.published ? "green" : "gray"}>{item.published ? "Live" : "Draft"}</Badge>
+                        </div>
+                        <h3 className="font-heading text-[14px] font-bold text-[#0A2540] truncate">{item.title}</h3>
+                        <p className="text-[11px] text-gray-400 mt-0.5">{item.slug} · {item.date} · {item.read_time}</p>
+                      </div>
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition shrink-0">
+                        <a href={`/insights/${item.slug}`} target="_blank" className="text-[12px] font-semibold text-[#0B6E4F] border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">View ↗</a>
+                        <button onClick={() => deleteInsight(item.slug)} className="text-[12px] font-semibold text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition">Delete</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                {insightPreview.tags?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800 mb-2">Tags</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {insightPreview.tags.map(t => <span key={t} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{t}</span>)}
-                    </div>
-                  </div>
-                )}
-                {insightPreview.related?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800 mb-2">Related Slugs</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {insightPreview.related.map(s => <span key={s} className="text-[11px] bg-sky-50 text-sky-600 px-2 py-0.5 rounded">{s}</span>)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Existing Insights */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
-          <h2 className="font-heading text-lg font-bold text-gray-900 mb-1">Published Insights</h2>
-          <p className="text-sm text-gray-500 mb-6">{insights.length} insight{insights.length !== 1 ? "s" : ""} in database</p>
-
-          {insights.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
-              <p className="text-sm font-medium">No insights yet</p>
-              <p className="text-xs mt-1">Upload an Excel file or seed existing insights to get started</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {insights.map(i => (
-                <div key={i.slug} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition group">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-gray-800 truncate">{i.title}</h3>
-                      <span className={`text-[10px] font-bold tracking-wider uppercase ${i.cat === "TRENDS" ? "text-emerald-600" : i.cat === "DATA" ? "text-sky-600" : "text-amber-600"}`}>{i.cat}</span>
-                      {i.featured && <span className="text-[10px] font-medium bg-amber-50 text-amber-700 px-2 py-0.5 rounded">Featured</span>}
-                      {i.published ? (
-                        <span className="text-[10px] font-medium bg-green-50 text-green-600 px-2 py-0.5 rounded">Live</span>
-                      ) : (
-                        <span className="text-[10px] font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Draft</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">{i.slug} &middot; {i.date} &middot; {i.read_time}</p>
-                  </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-                    <a href={`/insights/${i.slug}`} target="_blank" className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 hover:bg-emerald-50 transition">View</a>
-                    <button onClick={() => deleteInsight(i.slug)} className="text-xs text-red-500 hover:text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">Delete</button>
-                  </div>
-                </div>
-              ))}
             </div>
           )}
+
+          {/* ══ PUBLISHED REPORTS LIST ══ */}
+          {cmsTab === "reports" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading text-[15px] font-bold text-[#0A2540]">Published Reports</h2>
+                <span className="text-[12px] text-gray-400">{reports.length} total</span>
+              </div>
+
+              {reports.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center">
+                  <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <SideIcon type="reports" />
+                  </div>
+                  <p className="text-[15px] font-semibold text-gray-700 mb-1">No reports yet</p>
+                  <p className="text-[13px] text-gray-400">Upload an Excel file or click "Seed Reports" to get started.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reports.map(r => (
+                    <div key={r.slug} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-5 hover:border-gray-300 transition group">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge color="green">{r.cat}</Badge>
+                          {r.badge && <Badge color="amber">{r.badge}</Badge>}
+                          <Badge color={r.published ? "green" : "gray"}>{r.published ? "Live" : "Draft"}</Badge>
+                          <span className="text-[10px] text-gray-400">{r.code}</span>
+                        </div>
+                        <h3 className="font-heading text-[14px] font-bold text-[#0A2540] truncate">{r.title}</h3>
+                        <p className="text-[11px] text-gray-400 mt-0.5">{r.slug} · {r.size} · CAGR {r.cagr}</p>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition shrink-0">
+                        <a href={`/reports/${r.slug}`} target="_blank" className="text-[12px] font-semibold text-[#0B6E4F] border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition">View ↗</a>
+                        <button onClick={() => deleteReport(r.slug)} className="text-[12px] font-semibold text-red-500 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition">Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <p className="text-center text-[11px] text-gray-300 mt-10 mb-4">MindEarth CMS · Upload Excel → Auto-format → Publish</p>
         </div>
-
-        </>)}
-
-        <p className="text-center text-xs text-gray-400 mt-8 mb-4">MindEarth CMS &middot; Upload Excel &rarr; Auto-format &rarr; Publish</p>
       </div>
-    </div>
-  );
-}
-
-function PreviewSection({ title, count, extra, small }) {
-  const ok = count > 0;
-  return (
-    <div className={`flex items-center gap-2 ${small ? "py-0.5" : "py-1"}`}>
-      <span className={`w-5 h-5 rounded-full flex items-center justify-center ${ok ? "bg-emerald-100" : "bg-gray-100"}`}>
-        {ok ? (
-          <svg className="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-        ) : (
-          <span className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
-        )}
-      </span>
-      <span className={`${small ? "text-xs" : "text-sm"} ${ok ? "text-gray-700 font-medium" : "text-gray-400"}`}>{title}</span>
-      <span className={`text-xs ${ok ? "text-emerald-600" : "text-gray-300"}`}>{count} {extra || "items"}</span>
     </div>
   );
 }

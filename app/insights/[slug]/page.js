@@ -269,6 +269,117 @@ const articles = {
     tags: ["Supply Chain", "APAC", "ESG Performance", "Benchmarking", "Scope 3"],
     related: ["eu-csrd-multinationals", "climate-risk-emerging-markets"],
   },
+  "just-transition-finance-asia": {
+    cat: "RESEARCH",
+    date: "April 28, 2026",
+    read: "16 min",
+    author: "Saloni Gaikwad",
+    title: "Just Transition Finance: Capital for Coal Phase-Down in Asia",
+    subtitle: "MindEarth Climate Finance Research",
+    img: "https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=1800&q=80",
+    summary: "An estimated $1.4 trillion is needed to fund a socially equitable coal-to-clean transition across India, Indonesia, Vietnam, and the Philippines. Blended finance vehicles — combining concessional capital from DFIs with commercial debt and equity — are emerging as the dominant deployment structure, but execution lags far behind capital commitments.",
+    keyTakeaways: [
+      "$1.4T transition financing gap identified across four major Asian coal economies",
+      "JETP commitments of $47.5B remain 73% undisbursed three years after launch",
+      "Indonesia's PT PLN plans early retirement of 6.7GW coal capacity by 2030",
+      "Worker reskilling and community transition costs estimated at 8-12% of total capex",
+    ],
+    sections: [
+      {
+        heading: "The Scale of the Challenge",
+        body: "Asia accounts for 78% of global coal power capacity and over 80% of new coal plant additions in the past five years. A credible 1.5°C-aligned transition pathway requires the early retirement of 540 GW of coal capacity across Asia by 2035 — capacity that currently underpins national grids, employment in mining regions, and tax revenues for sub-sovereign governments.\n\nMindEarth's analysis, drawing on IEA, IRENA, and country-level grid operator data, estimates the total just transition financing requirement across India, Indonesia, Vietnam, and the Philippines at $1.4 trillion through 2040. This includes capital costs for replacement renewable capacity ($820B), grid modernisation and storage ($310B), and just transition components — worker reskilling, community development, and stranded asset compensation ($270B).",
+      },
+      {
+        heading: "Just Energy Transition Partnerships (JETPs)",
+        body: "The JETP model, launched at COP26 with the South Africa partnership and subsequently extended to Indonesia, Vietnam, and Senegal, represents the most ambitious multilateral attempt to mobilise just transition finance. Cumulative JETP commitments now total $47.5 billion, with Indonesia ($20B) and Vietnam ($15.5B) representing the largest Asian programmes.\n\nHowever, disbursement has been slow. Three years after the South Africa JETP launch, only 27% of committed funds have been disbursed, and substantial portions have funded studies and technical assistance rather than physical transition activities. Indonesia's JETP Comprehensive Investment and Policy Plan (CIPP) faces delays in finalising the project pipeline and resolving disagreements over the treatment of captive coal plants serving industrial customers.",
+        pullQuote: "Three years after the South Africa JETP launch, only 27% of committed funds have been disbursed.",
+      },
+      {
+        heading: "Blended Finance Structures",
+        body: "The emerging consensus among DFIs and commercial lenders is that blended finance — combining concessional capital from public sources with commercial debt and equity — is the most viable structure for funding just transition at scale. Concessional capital absorbs first-loss risk, enabling commercial investors to participate at acceptable risk-adjusted returns.\n\nIndonesia's PT PLN early retirement programme for 6.7 GW of coal capacity by 2030 is being structured as a blended vehicle, with ADB and World Bank providing concessional debt at 2.5-3.5% interest rates alongside commercial syndicated loans at 6.5-7.5%. The blended cost of capital of approximately 5.2% makes early retirement economically viable relative to continuing operations.",
+      },
+      {
+        heading: "The Social Dimension",
+        body: "Worker reskilling, community transition, and just labour outcomes are not optional ESG accessories — they are the core political precondition for credible transition pathways. MindEarth's case studies of coal community transitions in Germany, Poland, and the UK indicate that successful programmes invest 8-12% of total transition capex in social components, including early retirement packages for older workers, retraining for younger workers, economic diversification grants for affected municipalities, and continued healthcare and education access during transition periods.\n\nAsian transition programmes have historically under-invested in this dimension. The Just Transition Investment Platforms being developed in Indonesia and Vietnam are attempting to address this through dedicated funding windows for social programmes, but design choices around eligibility, governance, and disbursement mechanisms will determine actual impact.",
+      },
+    ],
+    tags: ["Just Transition", "Coal Phase-Down", "JETP", "Blended Finance", "Asia Climate"],
+    related: ["green-bond-outlook-2028", "climate-risk-emerging-markets"],
+  },
+  "scope-3-emissions-accountability": {
+    cat: "ADVISORY",
+    date: "April 14, 2026",
+    read: "14 min",
+    author: "Saloni Gaikwad",
+    title: "Scope 3 Emissions: From Estimation to Accountability",
+    subtitle: "MindEarth Carbon Strategy Advisory",
+    img: "https://images.unsplash.com/photo-1565891741441-64926e441838?w=1800&q=80",
+    summary: "Most corporates still report Scope 3 emissions using spend-based EEIO methods that are useful for screening but inadequate for credible decarbonisation. The next 24 months will see a decisive shift toward supplier-specific, primary-data approaches — driven by SBTi validation requirements, CSRD assurance obligations, and investor pressure.",
+    keyTakeaways: [
+      "73% of Scope 3 disclosures still rely on spend-based EEIO factors",
+      "SBTi will require activity-based data for Scope 3 targets from FY 2027",
+      "CSRD limited assurance triggers a step-change in primary data demands",
+      "Supplier engagement programmes deliver 35-60% emissions visibility uplift",
+    ],
+    sections: [
+      {
+        heading: "Why Scope 3 Now Matters Financially",
+        body: "Scope 3 emissions — those occurring across a company's value chain but outside its operational boundaries — typically represent 70-90% of a company's total carbon footprint. For asset-light sectors including financial services, technology, retail, and pharmaceuticals, the proportion is even higher.\n\nUntil recently, Scope 3 disclosure was treated as a secondary metric, with most companies reporting estimates based on environmentally-extended input-output (EEIO) factors applied to procurement spend. This approach satisfies disclosure obligations but provides limited operational insight and is increasingly recognised as inadequate for credible decarbonisation strategies. CSRD's limited assurance requirements, SBTi's tightening validation criteria, and investor due diligence questionnaires now demand activity-based, supplier-specific data.",
+      },
+      {
+        heading: "The SBTi Transition",
+        body: "The Science Based Targets initiative will require companies setting or revalidating Scope 3 targets after FY 2027 to use activity-based emissions factors rather than spend-based EEIO factors for at least 67% of Scope 3 inventory by Category. This represents a significant operational shift for the 5,400+ companies with validated SBTi targets, most of which currently use spend-based methods.\n\nThe transition will require companies to systematically engage their top 200-500 suppliers (typically representing 60-80% of procurement spend) to collect product-level or facility-level emissions data, validated through documented methodologies.",
+        pullQuote: "SBTi will require activity-based data for at least 67% of Scope 3 inventory by Category from FY 2027.",
+      },
+      {
+        heading: "Building Supplier Data Programmes",
+        body: "MindEarth's experience supporting corporate supplier engagement programmes across India, the EU, and ASEAN identifies four success factors. First, segment suppliers by emissions materiality rather than spend — a high-emissions intensity supplier with $5M annual spend may matter more than a $50M spend low-intensity supplier. Second, integrate data requests into existing procurement and qualification processes rather than running parallel sustainability surveys. Third, provide suppliers with technical assistance — many SMEs lack the carbon accounting capabilities to respond credibly to data requests. Fourth, design data infrastructure for incremental quality improvement rather than perfect-first-attempt completeness.\n\nWell-designed programmes typically deliver 35-60% emissions visibility uplift within 18 months — moving from blanket EEIO factors to a hybrid model where high-materiality suppliers report primary data and low-materiality categories continue with proxy estimates.",
+      },
+      {
+        heading: "Investor and Regulator Expectations",
+        body: "Asset managers and proxy advisors have rapidly elevated Scope 3 from a disclosure-only item to a financial materiality factor. ISS and Glass Lewis voting guidelines now consider Scope 3 disclosure quality and target ambition when evaluating director re-election and say-on-climate votes. Major asset managers including Norges Bank, Legal & General, and Aviva have published explicit Scope 3 expectations applied across their portfolio engagement.\n\nOn the regulatory side, CSRD's limited assurance requirements (mandatory from FY 2024 for in-scope companies) trigger a step-change in primary data demands, since assurance providers cannot validate EEIO-based estimates beyond confirming methodology disclosure. Companies anticipating reasonable assurance requirements (currently targeted for FY 2028) need to begin building supplier data infrastructure now.",
+      },
+    ],
+    tags: ["Scope 3", "GHG Protocol", "SBTi", "CSRD", "Value Chain"],
+    related: ["carbon-markets-2025", "supply-chain-apac"],
+  },
+  "india-ccts-year-one": {
+    cat: "MARKET INTELLIGENCE",
+    date: "April 2, 2026",
+    read: "11 min",
+    author: "Saloni Gaikwad",
+    title: "India's Carbon Credit Trading Scheme: Year One Review",
+    subtitle: "MindEarth Carbon Market Intelligence",
+    img: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1800&q=80",
+    summary: "Twelve months into operation, India's CCTS has generated 12M credits, established price discovery in the ₹650-₹2,200/tCO₂e band, and exposed the structural gaps obligated entities must address before Phase II compliance kicks in for nine high-emission sectors.",
+    keyTakeaways: [
+      "12M credits issued in Year 1, primarily renewable energy and energy efficiency",
+      "Price band of ₹650-₹2,200/tCO₂e established across trading sessions",
+      "Phase II compliance covers 9 sectors including iron & steel, cement, aluminium",
+      "MRV infrastructure remains the binding constraint on credit supply",
+    ],
+    sections: [
+      {
+        heading: "Scheme Architecture and Year One Activity",
+        body: "India's Carbon Credit Trading Scheme (CCTS), notified under the Energy Conservation (Amendment) Act 2022, became operational in 2025 with the Bureau of Energy Efficiency (BEE) as scheme administrator and the Power Exchange of India (IEX) handling trading infrastructure. The scheme operates a dual mechanism — a compliance market for obligated entities in energy-intensive sectors and a parallel offset mechanism for voluntary participants generating credits from non-obligated activities.\n\nIn its first year of operation, the CCTS issued 12 million credits, the majority sourced from renewable energy generation (61%), industrial energy efficiency improvements (24%), and methane abatement projects (8%). Trading volumes ramped from initial weekly sessions of 50,000-80,000 credits in Q1 to 280,000-340,000 credits per week by Q4, with the registered participant base growing from 87 entities at launch to 412 by year-end.",
+      },
+      {
+        heading: "Price Discovery and Market Behaviour",
+        body: "Price discovery during Year 1 established a trading band of ₹650-₹2,200 per tCO₂e (approximately $8-$26), with significant intra-period variation reflecting credit vintage, project type, and verification status. Renewable energy credits with recent vintages traded at the upper end of the range, while older energy efficiency credits from PAT-scheme conversions traded near the floor.\n\nThe price band remains substantially below the implicit carbon prices embedded in EU ETS (€85-€95/tCO₂e) and the UK ETS, reflecting both the early stage of the Indian market and the abundance of low-cost abatement opportunities in renewable energy and industrial efficiency. MindEarth expects prices to firm as Phase II compliance obligations bring nine additional sectors into the demand pool from FY 2027-28.",
+        pullQuote: "Phase II compliance obligations will bring nine additional sectors into the demand pool from FY 2027-28.",
+      },
+      {
+        heading: "Phase II Compliance Sectors",
+        body: "Phase II of the CCTS, scheduled for activation in FY 2027-28, expands compliance obligations to nine high-emission sectors: iron and steel, cement, aluminium, pulp and paper, chlor-alkali, fertilisers, petrochemicals, refineries, and textiles. Together these sectors account for approximately 40% of India's industrial emissions and 28% of total national emissions.\n\nDraft sectoral emission intensity benchmarks have been issued for consultation, with final targets expected by Q3 2026. Obligated entities exceeding their benchmarks must either reduce emissions, purchase compliance credits, or pay the regulatory penalty (capped at twice the prevailing market price). Early estimates suggest 60-70% of Phase II entities will be net buyers in the initial compliance cycle, creating substantial demand-side pressure.",
+      },
+      {
+        heading: "Structural Constraints and Outlook",
+        body: "The binding constraint on CCTS market development in Year 1 was MRV (monitoring, reporting, verification) infrastructure — specifically the limited capacity of accredited verifiers and the time-consuming validation processes for new project methodologies. As of year-end, 23 verification agencies had been accredited, but processing times for new project registrations averaged 8-12 months.\n\nMindEarth projects credit issuance will reach 28-35 million annually by FY 2028 as MRV infrastructure scales and Phase II obligated entities begin participating. Price evolution will depend critically on the calibration of Phase II benchmarks — overly stringent targets risk creating supply shortages and price spikes, while overly lenient targets undermine the scheme's environmental credibility.",
+      },
+    ],
+    tags: ["CCTS", "India", "Carbon Markets", "Compliance", "BEE"],
+    related: ["carbon-markets-2025", "esg-trends-q1-2026"],
+  },
 };
 
 export default function InsightArticle() {
