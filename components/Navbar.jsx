@@ -208,10 +208,6 @@ export default function Navbar() {
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search reports..." className="w-full pl-3 pr-3 py-2 text-xs bg-brand-light border border-brand-border rounded-lg outline-none focus:border-brand-green transition-all placeholder:text-brand-muted" />
           </div>
 
-          <Link href="/portal" className="hidden sm:block bg-brand-green text-white text-xs font-semibold px-5 py-2.5 rounded-lg hover:bg-[#095C42] transition-colors duration-200 shrink-0">
-            Client Portal
-          </Link>
-
           <button className="lg:hidden p-1.5" onClick={() => setOpen(!open)}>
             <svg className="w-5 h-5 text-brand-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeWidth={2} d={open ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
