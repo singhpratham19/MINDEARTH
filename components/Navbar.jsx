@@ -61,23 +61,23 @@ const reportCategories = [
 
 function SvcIcon({ type }) {
   const paths = {
+    tev: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+    dpr: <><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></>,
+    finance: <><circle cx="12" cy="12" r="9" /><path d="M14.5 9h-3a2 2 0 000 4h2a2 2 0 010 4h-3" /><path d="M12 6v2M12 16v2" /></>,
     research: <><path d="M3 3v18h18" /><path d="M7 16l4-8 4 4 4-6" /></>,
-    strategy: <><circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" /></>,
-    compliance: <><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 14l2 2 4-4" /></>,
-    diligence: <><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /><path d="M11 8v6M8 11h6" /></>,
-    climate: <><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /><circle cx="12" cy="12" r="4" /></>,
-    training: <><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" /><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" /></>,
+    esg: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" /></>,
+    brsr: <><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 14l2 2 4-4" /></>,
   };
   return <svg className="w-[18px] h-[18px] text-[#0B6E4F] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">{paths[type]}</svg>;
 }
 
 const serviceItems = [
-  { label: "ESG Market Research", href: "/services", iconType: "research" },
-  { label: "ESG Strategy & Advisory", href: "/services", iconType: "strategy" },
-  { label: "BRSR & Regulatory Compliance", href: "/services/brsr", iconType: "compliance" },
-  { label: "ESG Due Diligence", href: "/services", iconType: "diligence" },
-  { label: "Climate Risk & Carbon Accounting", href: "/services", iconType: "climate" },
-  { label: "ESG Training & Capacity Building", href: "/services", iconType: "training" },
+  { label: "TEV Reports", href: "/services/tev-reports", iconType: "tev" },
+  { label: "DPR Reports", href: "/services/dpr-reports", iconType: "dpr" },
+  { label: "Project Finance Consultancy", href: "/services/project-finance", iconType: "finance" },
+  { label: "Market Research Reports", href: "/services/market-research", iconType: "research" },
+  { label: "ESG & Sustainability Consultancy", href: "/services/esg-consultancy", iconType: "esg" },
+  { label: "BRSR & Regulatory Compliance", href: "/services/brsr", iconType: "brsr" },
 ];
 
 const links = [
