@@ -179,7 +179,11 @@ export default function InsightsPage() {
             img: i.img || "",
             topics: i.tags || [],
           }));
-          setAllArticles(dbArticles);
+          // Merge DB articles with hardcoded fallback. DB entries win on slug collisions,
+          // hardcoded entries fill in for any slug not yet uploaded.
+          const dbSlugs = new Set(dbArticles.map(a => a.slug));
+          const fallback = articles.filter(a => !dbSlugs.has(a.slug));
+          setAllArticles([...dbArticles, ...fallback]);
         }
       })
       .catch(() => {});
