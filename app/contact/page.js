@@ -98,23 +98,22 @@ export default function ContactPage() {
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-5">
             <Fade delay={0.1}>
-              <div className="bg-brand-light rounded-xl p-5 border border-gray-200">
-                <p className="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-4">Global Presence</p>
-                {[["📍","Pune, India","HQ — South Asia & Middle East"],["📍","London, UK","Europe & Africa Hub"],["📍","Singapore","Southeast Asia Hub"]].map(([ic,city,role],i)=><div key={city} className={`flex items-start gap-3 ${i<2?"pb-3 mb-3 border-b border-gray-200":""}`}><div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-base shrink-0">{ic}</div><div><p className="text-sm font-semibold text-gray-800">{city}</p><p className="text-[10px] text-gray-500">{role}</p></div></div>)}
+              <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100">
+                <h3 className="font-heading text-sm font-bold text-emerald-800 mb-2">We respond within 24 hours</h3>
+                <p className="text-xs text-emerald-700/80 leading-relaxed">Send us a message using the form and one of our analysts will reach out within one business day to scope your engagement.</p>
               </div>
             </Fade>
             <Fade delay={0.15}>
               <div className="bg-brand-light rounded-xl p-5 border border-gray-200">
-                <p className="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-4">Direct Contact</p>
-                {[["📧","hello@mindearth.co","General"],["☎","+91 20 1234 5678","India"],["☎","+1 617 765 2493","International"]].map(([ic,val,label])=><div key={val} className="flex items-center gap-3 mb-2.5"><span className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-sm">{ic}</span><div><p className="text-sm font-medium text-gray-800">{val}</p><p className="text-[10px] text-gray-400">{label}</p></div></div>)}
-                <div className="mt-3 pt-3 border-t border-gray-200 flex items-center gap-2"><span className="text-[10px] text-gray-400">Office hours:</span><span className="text-[11px] font-medium text-gray-600">Mon–Fri, 9am–6pm IST</span></div>
-              </div>
-            </Fade>
-            <Fade delay={0.2}>
-              <div className="bg-emerald-50 rounded-xl p-5 border border-emerald-100">
-                <h3 className="font-heading text-sm font-bold text-emerald-800 mb-2">We respond within 24 hours</h3>
-                <p className="text-xs text-emerald-700/70 leading-relaxed mb-3">For urgent requests, call our priority line or schedule an immediate callback.</p>
-                <button className="bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-emerald-600 transition">Schedule Callback</button>
+                <p className="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-3">What happens next</p>
+                <ol className="space-y-3">
+                  {[["1","We review your enquiry and route it to the relevant practice lead."],["2","You receive a tailored response with scope, timelines, and indicative pricing."],["3","If it is a fit, we schedule a 30-minute discovery call."]].map(([n,t])=>(
+                    <li key={n} className="flex items-start gap-3">
+                      <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center shrink-0">{n}</span>
+                      <span className="text-[12px] text-gray-600 leading-relaxed">{t}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </Fade>
           </div>
