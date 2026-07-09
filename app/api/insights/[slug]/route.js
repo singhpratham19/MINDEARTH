@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 
+// Always fetch live so newly-added articles resolve without a redeploy.
+export const dynamic = "force-dynamic";
+
 // GET single published insight by slug (public)
 export async function GET(req, { params }) {
   const { slug } = await params;
