@@ -129,6 +129,10 @@ export default function ContactPage() {
                     <span>+91 91753 73855</span>
                   </a>
                 </div>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-[10px] font-bold tracking-[0.16em] text-gray-400 uppercase mb-1">Office hours</p>
+                  <p className="text-sm font-semibold text-brand-dark">Monday – Saturday, 10:00 AM – 8:00 PM</p>
+                </div>
               </div>
             </Fade>
           </div>
