@@ -116,6 +116,21 @@ export default function ContactPage() {
                 </ol>
               </div>
             </Fade>
+            <Fade delay={0.2}>
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-3">Call our team</p>
+                <div className="space-y-2">
+                  <a href="tel:+919011422555" className="flex items-center gap-3 text-sm font-semibold text-brand-dark hover:text-emerald-600 transition">
+                    <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center" aria-hidden="true">☎</span>
+                    <span>+91 90114 22555</span>
+                  </a>
+                  <a href="tel:+919175373855" className="flex items-center gap-3 text-sm font-semibold text-brand-dark hover:text-emerald-600 transition">
+                    <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center" aria-hidden="true">☎</span>
+                    <span>+91 91753 73855</span>
+                  </a>
+                </div>
+              </div>
+            </Fade>
           </div>
         </div>
       </section>
